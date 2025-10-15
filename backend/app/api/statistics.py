@@ -6,10 +6,11 @@ import oracledb
 from app.models.schemas import (
     DiagnosticoStats,
     EdadStats,
-    GeneroStats,
-    TipoIngresoStats,
+    SexoStats,
     TendenciaMensual,
-    DuracionEstancia,
+    EstanciaStats,
+    ComunidadStats,
+    ServicioStats,
     ErrorResponse
 )
 from app.database.connection import get_db_connection
@@ -65,7 +66,7 @@ async def get_edad_distribution(
     Get age distribution statistics.
     
     Returns patient count grouped by age ranges:
-    - 18-25, 26-35, 36-45, 46-55, 56-65, 65+
+    - 0-17, 18-25, 26-35, 36-45, 46-55, 56-65, 65+
     """
     try:
         results = HealthDataService.get_edad_distribution(connection)
@@ -77,22 +78,22 @@ async def get_edad_distribution(
 
 
 @router.get(
-    "/genero",
-    response_model=List[GeneroStats],
-    summary="Get gender distribution",
-    description="Retrieve gender distribution statistics with counts and percentages.",
+    "/sexo",
+    response_model=List[SexoStats],
+    summary="Get sex distribution",
+    description="Retrieve sex distribution statistics with counts and percentages.",
     responses={
-        200: {"description": "Successfully retrieved gender distribution"},
+        200: {"description": "Successfully retrieved sex distribution"},
         500: {"model": ErrorResponse, "description": "Internal server error"}
     }
 )
-async def get_genero_distribution(
+async def get_sexo_distribution(
     connection=Depends(get_db_connection)
 ):
     """
-    Get gender distribution statistics.
+    Get sex distribution statistics.
     
-    Returns patient count grouped by gender with percentages.
+    Returns patient count grouped by sex (1: Hombre, 2: Mujer) with percentages.
     """
     try:
         results = HealthDataService.get_genero_distribution(connection)
@@ -104,22 +105,22 @@ async def get_genero_distribution(
 
 
 @router.get(
-    "/tipo-ingreso",
-    response_model=List[TipoIngresoStats],
-    summary="Get admission type statistics",
-    description="Retrieve statistics about hospital admission types.",
+    "/circunstancia-contacto",
+    response_model=List[DiagnosticoStats],
+    summary="Get admission circumstance statistics",
+    description="Retrieve statistics about hospital admission circumstances (Circunstancia de Contacto).",
     responses={
-        200: {"description": "Successfully retrieved admission type statistics"},
+        200: {"description": "Successfully retrieved admission circumstance statistics"},
         500: {"model": ErrorResponse, "description": "Internal server error"}
     }
 )
-async def get_tipo_ingreso_stats(
+async def get_circunstancia_stats(
     connection=Depends(get_db_connection)
 ):
     """
-    Get admission type statistics.
+    Get admission circumstance statistics.
     
-    Returns admission counts grouped by type (Urgent, Scheduled, Referred) with percentages.
+    Returns admission counts grouped by circumstance of contact with percentages.
     """
     try:
         results = HealthDataService.get_tipo_ingreso_stats(connection)
@@ -161,7 +162,7 @@ async def get_tendencia_mensual(
 
 @router.get(
     "/duracion-estancia",
-    response_model=List[DuracionEstancia],
+    response_model=List[EstanciaStats],
     summary="Get hospital stay duration statistics",
     description="Retrieve statistics about hospital stay durations grouped by day ranges.",
     responses={
@@ -180,6 +181,60 @@ async def get_duracion_estancia(
     """
     try:
         results = HealthDataService.get_duracion_estancia(connection)
+        return results
+    except oracledb.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/comunidad-autonoma",
+    response_model=List[ComunidadStats],
+    summary="Get statistics by Comunidad Autónoma",
+    description="Retrieve statistics grouped by Comunidad Autónoma with counts and percentages.",
+    responses={
+        200: {"description": "Successfully retrieved community statistics"},
+        500: {"model": ErrorResponse, "description": "Internal server error"}
+    }
+)
+async def get_comunidad_stats(
+    connection=Depends(get_db_connection)
+):
+    """
+    Get statistics by Comunidad Autónoma.
+    
+    Returns patient count grouped by autonomous community with percentages.
+    """
+    try:
+        results = HealthDataService.get_comunidad_stats(connection)
+        return results
+    except oracledb.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/servicio",
+    response_model=List[ServicioStats],
+    summary="Get statistics by service",
+    description="Retrieve statistics grouped by hospital service (top 20).",
+    responses={
+        200: {"description": "Successfully retrieved service statistics"},
+        500: {"model": ErrorResponse, "description": "Internal server error"}
+    }
+)
+async def get_servicio_stats(
+    connection=Depends(get_db_connection)
+):
+    """
+    Get statistics by service.
+    
+    Returns patient count grouped by hospital service with percentages (top 20).
+    """
+    try:
+        results = HealthDataService.get_servicio_stats(connection)
         return results
     except oracledb.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

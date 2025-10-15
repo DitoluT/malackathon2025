@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List
 import oracledb
 
-from app.models.schemas import Paciente, Diagnostico, IngresoHospitalario, ErrorResponse
+from app.models.schemas import PacienteResumen, IngresoResumen, ErrorResponse
 from app.database.connection import get_db_connection
 from app.services.health_data_service import HealthDataService
 
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/data", tags=["Data"])
 
 @router.get(
     "/pacientes",
-    response_model=List[Paciente],
+    response_model=List[PacienteResumen],
     summary="Get patients list",
     description="Retrieve a paginated list of patients from the database.",
     responses={
@@ -31,6 +31,9 @@ async def get_pacientes(
     Parameters:
     - skip: Number of records to skip (default: 0)
     - limit: Maximum number of records to return (default: 100, max: 1000)
+    
+    Returns:
+    - List of patient summaries with name, age, sex, community, and birth date
     """
     try:
         results = HealthDataService.get_pacientes_list(connection, skip, limit)
@@ -43,7 +46,6 @@ async def get_pacientes(
 
 @router.get(
     "/diagnosticos",
-    response_model=List[Diagnostico],
     summary="Get diagnoses list",
     description="Retrieve a paginated list of diagnoses from the database.",
     responses={
@@ -58,11 +60,14 @@ async def get_diagnosticos(
     connection=Depends(get_db_connection)
 ):
     """
-    Get paginated list of diagnoses.
+    Get paginated list of diagnoses grouped by principal diagnosis.
     
     Parameters:
     - skip: Number of records to skip (default: 0)
     - limit: Maximum number of records to return (default: 100, max: 1000)
+    
+    Returns:
+    - List of unique diagnoses with category and case count
     """
     try:
         results = HealthDataService.get_diagnosticos_list(connection, skip, limit)
@@ -75,7 +80,7 @@ async def get_diagnosticos(
 
 @router.get(
     "/ingresos",
-    response_model=List[IngresoHospitalario],
+    response_model=List[IngresoResumen],
     summary="Get hospital admissions list",
     description="Retrieve a paginated list of hospital admissions from the database.",
     responses={
@@ -95,6 +100,9 @@ async def get_ingresos(
     Parameters:
     - skip: Number of records to skip (default: 0)
     - limit: Maximum number of records to return (default: 100, max: 1000)
+    
+    Returns:
+    - List of admissions with patient name, dates, diagnosis, service, etc.
     """
     try:
         results = HealthDataService.get_ingresos_list(connection, skip, limit)

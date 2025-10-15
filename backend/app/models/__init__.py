@@ -2,29 +2,33 @@
 Models package initialization.
 """
 from app.models.schemas import (
-    Paciente,
-    Diagnostico,
-    IngresoHospitalario,
+    RegistroMental,
+    RegistroMentalBase,
+    PacienteResumen,
+    IngresoResumen,
     DiagnosticoStats,
     EdadStats,
-    GeneroStats,
-    TipoIngresoStats,
+    SexoStats,
+    ComunidadStats,
     TendenciaMensual,
-    DuracionEstancia,
+    EstanciaStats,
+    ServicioStats,
     HealthStatus,
     ErrorResponse
 )
 
 __all__ = [
-    'Paciente',
-    'Diagnostico',
-    'IngresoHospitalario',
+    'RegistroMental',
+    'RegistroMentalBase',
+    'PacienteResumen',
+    'IngresoResumen',
     'DiagnosticoStats',
     'EdadStats',
-    'GeneroStats',
-    'TipoIngresoStats',
+    'SexoStats',
+    'ComunidadStats',
     'TendenciaMensual',
-    'DuracionEstancia',
+    'EstanciaStats',
+    'ServicioStats',
     'HealthStatus',
     'ErrorResponse'
 ]

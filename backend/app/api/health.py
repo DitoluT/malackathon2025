@@ -5,6 +5,7 @@ import oracledb
 from app.models.schemas import HealthStatus
 from app.database.connection import get_db_connection
 from app.config import settings
+from app.services.health_data_service import HealthDataService
 
 router = APIRouter(tags=["Health"])
 
@@ -24,14 +25,19 @@ async def health_check(connection=Depends(get_db_connection)):
     - Database connection status
     - Current timestamp
     - API version
+    - Total records count
     """
     db_status = "connected"
+    total_registros = None
     
     try:
         cursor = connection.cursor()
         cursor.execute("SELECT 1 FROM DUAL")
         cursor.fetchone()
         cursor.close()
+        
+        # Get total records count
+        total_registros = HealthDataService.count_total_registros(connection)
     except oracledb.Error:
         db_status = "disconnected"
     except Exception:
@@ -41,5 +47,6 @@ async def health_check(connection=Depends(get_db_connection)):
         "status": "healthy" if db_status == "connected" else "unhealthy",
         "database": db_status,
         "timestamp": datetime.now(),
-        "version": settings.VERSION
+        "version": settings.VERSION,
+        "total_registros": total_registros
     }

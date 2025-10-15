@@ -5,7 +5,7 @@ import logging
 
 from app.config import settings
 from app.database.connection import db_connection
-from app.api import health, statistics, data
+from app.api import health, statistics, data, query
 
 # Configure logging
 logging.basicConfig(
@@ -42,30 +42,38 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="""
-    REST API for accessing health mental data from Oracle Autonomous Database.
+    REST API for accessing mental health data from Oracle Autonomous Database.
     
     ## Features
     
-    * **Statistics**: Get various statistical analyses of health mental data
-    * **Data Access**: Retrieve raw data from patients, diagnoses, and hospital admissions
+    * **Statistics**: Get various statistical analyses of mental health data
+    * **Data Access**: Retrieve data from patients, diagnoses, and hospital admissions
+    * **Custom Queries**: Execute custom SQL SELECT queries with safety checks
     * **Health Check**: Monitor API and database status
     
     ## Database Schema
     
-    The API provides access to three main tables:
+    The API provides access to the main table:
     
-    * **PACIENTES**: Patient demographic information
-    * **DIAGNOSTICOS**: Mental health diagnoses with ICD-10 codes
-    * **INGRESOS_HOSPITALARIOS**: Hospital admission records
+    * **ENFERMEDADESMENTALESDIAGNOSTICO**: Complete mental health diagnosis data (111 columns)
+      - Patient information (name, age, sex, birth date)
+      - Location data (autonomous community, country)
+      - Admission details (dates, duration, service)
+      - Diagnoses (principal + 19 additional diagnoses)
+      - Clinical data (GDR, APR, costs, etc.)
+    
+    ## Custom Queries
+    
+    The `/query/execute` endpoint allows you to run custom SQL SELECT queries with:
+    - **Security**: Only SELECT queries allowed, dangerous operations blocked
+    - **Parameters**: Support for parameterized queries to prevent SQL injection
+    - **Examples**: Use `/query/examples` to see useful query templates
+    - **Schema Info**: Use `/query/schema` to explore available columns
     
     ## Authentication
     
     Currently, the API is open for development. Production deployment should implement
     proper authentication and authorization mechanisms.
-    
-    ## Rate Limiting
-    
-    No rate limiting is currently implemented. Consider adding rate limiting for production use.
     """,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -86,6 +94,7 @@ app.add_middleware(
 app.include_router(health.router, prefix=settings.API_V1_PREFIX)
 app.include_router(statistics.router, prefix=settings.API_V1_PREFIX)
 app.include_router(data.router, prefix=settings.API_V1_PREFIX)
+app.include_router(query.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/", tags=["Root"])

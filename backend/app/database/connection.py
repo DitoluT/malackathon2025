@@ -21,28 +21,28 @@ class DatabaseConnection:
     
     def initialize_pool(self):
         """
-        Initialize connection pool to Oracle Database.
+        Initialize connection pool to Oracle Database using THIN mode with mTLS.
         """
         try:
             if self._pool is None:
-                logger.info("Initializing Oracle Database connection pool...")
+                logger.info("Initializing Oracle Database connection pool with mTLS...")
+                logger.info(f"Using TNS alias: {settings.ORACLE_DSN}")
+                logger.info(f"Wallet location: {settings.ORACLE_WALLET_LOCATION}")
                 
-                # Configure Oracle Client if needed
-                if settings.ORACLE_CONFIG_DIR:
-                    oracledb.init_oracle_client(config_dir=settings.ORACLE_CONFIG_DIR)
-                
-                # Create connection pool
+                # Create connection pool using THIN mode with mTLS (same as test.py)
                 self._pool = oracledb.create_pool(
                     user=settings.ORACLE_USER,
                     password=settings.ORACLE_PASSWORD,
-                    dsn=settings.ORACLE_DSN,
+                    dsn=settings.ORACLE_DSN,                    # TNS alias (malackathon2025_low)
+                    config_dir=settings.ORACLE_CONFIG_DIR,      # directory with tnsnames.ora
+                    wallet_location=settings.ORACLE_WALLET_LOCATION,  # directory with ewallet.pem
+                    wallet_password=settings.ORACLE_WALLET_PASSWORD,  # wallet password
                     min=2,
                     max=10,
-                    increment=1,
-                    threaded=True
+                    increment=1
                 )
                 
-                logger.info("Oracle Database connection pool initialized successfully")
+                logger.info("Oracle Database connection pool initialized successfully with mTLS")
         except Exception as e:
             logger.error(f"Error initializing database pool: {str(e)}")
             raise

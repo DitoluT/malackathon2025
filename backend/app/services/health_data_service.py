@@ -27,13 +27,12 @@ class HealthDataService:
             cursor = connection.cursor()
             query = """
                 SELECT 
-                    d.categoria,
+                    "Categoría",
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
-                FROM DIAGNOSTICOS d
-                INNER JOIN INGRESOS_HOSPITALARIOS ih ON d.id_diagnostico = ih.id_diagnostico
-                WHERE d.categoria IS NOT NULL
-                GROUP BY d.categoria
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                WHERE "Categoría" IS NOT NULL
+                GROUP BY "Categoría"
                 ORDER BY total DESC
             """
             cursor.execute(query)
@@ -68,37 +67,39 @@ class HealthDataService:
             query = """
                 SELECT 
                     CASE 
-                        WHEN p.edad BETWEEN 18 AND 25 THEN '18-25'
-                        WHEN p.edad BETWEEN 26 AND 35 THEN '26-35'
-                        WHEN p.edad BETWEEN 36 AND 45 THEN '36-45'
-                        WHEN p.edad BETWEEN 46 AND 55 THEN '46-55'
-                        WHEN p.edad BETWEEN 56 AND 65 THEN '56-65'
-                        WHEN p.edad > 65 THEN '65+'
+                        WHEN EDAD BETWEEN 0 AND 17 THEN '0-17'
+                        WHEN EDAD BETWEEN 18 AND 25 THEN '18-25'
+                        WHEN EDAD BETWEEN 26 AND 35 THEN '26-35'
+                        WHEN EDAD BETWEEN 36 AND 45 THEN '36-45'
+                        WHEN EDAD BETWEEN 46 AND 55 THEN '46-55'
+                        WHEN EDAD BETWEEN 56 AND 65 THEN '56-65'
+                        WHEN EDAD > 65 THEN '65+'
                         ELSE 'Unknown'
                     END as rango_edad,
                     COUNT(*) as total
-                FROM PACIENTES p
-                INNER JOIN INGRESOS_HOSPITALARIOS ih ON p.id_paciente = ih.id_paciente
-                WHERE p.edad IS NOT NULL
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                WHERE EDAD IS NOT NULL
                 GROUP BY 
                     CASE 
-                        WHEN p.edad BETWEEN 18 AND 25 THEN '18-25'
-                        WHEN p.edad BETWEEN 26 AND 35 THEN '26-35'
-                        WHEN p.edad BETWEEN 36 AND 45 THEN '36-45'
-                        WHEN p.edad BETWEEN 46 AND 55 THEN '46-55'
-                        WHEN p.edad BETWEEN 56 AND 65 THEN '56-65'
-                        WHEN p.edad > 65 THEN '65+'
+                        WHEN EDAD BETWEEN 0 AND 17 THEN '0-17'
+                        WHEN EDAD BETWEEN 18 AND 25 THEN '18-25'
+                        WHEN EDAD BETWEEN 26 AND 35 THEN '26-35'
+                        WHEN EDAD BETWEEN 36 AND 45 THEN '36-45'
+                        WHEN EDAD BETWEEN 46 AND 55 THEN '46-55'
+                        WHEN EDAD BETWEEN 56 AND 65 THEN '56-65'
+                        WHEN EDAD > 65 THEN '65+'
                         ELSE 'Unknown'
                     END
                 ORDER BY 
                     CASE rango_edad
-                        WHEN '18-25' THEN 1
-                        WHEN '26-35' THEN 2
-                        WHEN '36-45' THEN 3
-                        WHEN '46-55' THEN 4
-                        WHEN '56-65' THEN 5
-                        WHEN '65+' THEN 6
-                        ELSE 7
+                        WHEN '0-17' THEN 1
+                        WHEN '18-25' THEN 2
+                        WHEN '26-35' THEN 3
+                        WHEN '36-45' THEN 4
+                        WHEN '46-55' THEN 5
+                        WHEN '56-65' THEN 6
+                        WHEN '65+' THEN 7
+                        ELSE 8
                     END
             """
             cursor.execute(query)
@@ -131,13 +132,16 @@ class HealthDataService:
             cursor = connection.cursor()
             query = """
                 SELECT 
-                    p.genero,
+                    CASE 
+                        WHEN SEXO = 1 THEN 'Hombre'
+                        WHEN SEXO = 2 THEN 'Mujer'
+                        ELSE 'Otro'
+                    END as sexo,
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
-                FROM PACIENTES p
-                INNER JOIN INGRESOS_HOSPITALARIOS ih ON p.id_paciente = ih.id_paciente
-                WHERE p.genero IS NOT NULL
-                GROUP BY p.genero
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                WHERE SEXO IS NOT NULL
+                GROUP BY SEXO
                 ORDER BY total DESC
             """
             cursor.execute(query)
@@ -145,7 +149,7 @@ class HealthDataService:
             results = []
             for row in cursor:
                 results.append({
-                    "genero": row[0],
+                    "sexo": row[0],
                     "total": row[1],
                     "porcentaje": float(row[2])
                 })
@@ -159,7 +163,7 @@ class HealthDataService:
     @staticmethod
     def get_tipo_ingreso_stats(connection) -> List[dict]:
         """
-        Get admission type statistics.
+        Get admission type statistics (circunstancia de contacto).
         
         Args:
             connection: Database connection
@@ -171,12 +175,12 @@ class HealthDataService:
             cursor = connection.cursor()
             query = """
                 SELECT 
-                    tipo_ingreso,
+                    CIRCUNSTANCIA_DE_CONTACTO,
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
-                FROM INGRESOS_HOSPITALARIOS
-                WHERE tipo_ingreso IS NOT NULL
-                GROUP BY tipo_ingreso
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                WHERE CIRCUNSTANCIA_DE_CONTACTO IS NOT NULL
+                GROUP BY CIRCUNSTANCIA_DE_CONTACTO
                 ORDER BY total DESC
             """
             cursor.execute(query)
@@ -184,7 +188,7 @@ class HealthDataService:
             results = []
             for row in cursor:
                 results.append({
-                    "tipo_ingreso": row[0],
+                    "tipo_ingreso": str(row[0]),
                     "total": row[1],
                     "porcentaje": float(row[2])
                 })
@@ -213,24 +217,24 @@ class HealthDataService:
             if year:
                 query = """
                     SELECT 
-                        TO_CHAR(fecha_ingreso, 'MM') as mes,
-                        TO_CHAR(fecha_ingreso, 'YYYY') as anio,
+                        TO_CHAR(FECHA_DE_INGRESO, 'MM') as mes,
+                        TO_CHAR(FECHA_DE_INGRESO, 'YYYY') as anio,
                         COUNT(*) as total
-                    FROM INGRESOS_HOSPITALARIOS
-                    WHERE EXTRACT(YEAR FROM fecha_ingreso) = :year
-                    GROUP BY TO_CHAR(fecha_ingreso, 'MM'), TO_CHAR(fecha_ingreso, 'YYYY')
+                    FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                    WHERE EXTRACT(YEAR FROM FECHA_DE_INGRESO) = :year
+                    GROUP BY TO_CHAR(FECHA_DE_INGRESO, 'MM'), TO_CHAR(FECHA_DE_INGRESO, 'YYYY')
                     ORDER BY mes
                 """
                 cursor.execute(query, year=year)
             else:
                 query = """
                     SELECT 
-                        TO_CHAR(fecha_ingreso, 'MM') as mes,
-                        TO_CHAR(fecha_ingreso, 'YYYY') as anio,
+                        TO_CHAR(FECHA_DE_INGRESO, 'MM') as mes,
+                        TO_CHAR(FECHA_DE_INGRESO, 'YYYY') as anio,
                         COUNT(*) as total
-                    FROM INGRESOS_HOSPITALARIOS
-                    WHERE fecha_ingreso >= ADD_MONTHS(SYSDATE, -12)
-                    GROUP BY TO_CHAR(fecha_ingreso, 'MM'), TO_CHAR(fecha_ingreso, 'YYYY')
+                    FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                    WHERE FECHA_DE_INGRESO >= ADD_MONTHS(SYSDATE, -12)
+                    GROUP BY TO_CHAR(FECHA_DE_INGRESO, 'MM'), TO_CHAR(FECHA_DE_INGRESO, 'YYYY')
                     ORDER BY anio, mes
                 """
                 cursor.execute(query)
@@ -245,7 +249,7 @@ class HealthDataService:
             for row in cursor:
                 results.append({
                     "mes": month_names.get(row[0], row[0]),
-                    "anio": int(row[1]),
+                    "anio": row[1],
                     "total": row[2]
                 })
             
@@ -271,23 +275,23 @@ class HealthDataService:
             query = """
                 SELECT 
                     CASE 
-                        WHEN (fecha_alta - fecha_ingreso) BETWEEN 1 AND 3 THEN '1-3 dias'
-                        WHEN (fecha_alta - fecha_ingreso) BETWEEN 4 AND 7 THEN '4-7 dias'
-                        WHEN (fecha_alta - fecha_ingreso) BETWEEN 8 AND 14 THEN '8-14 dias'
-                        WHEN (fecha_alta - fecha_ingreso) BETWEEN 15 AND 30 THEN '15-30 dias'
-                        WHEN (fecha_alta - fecha_ingreso) > 30 THEN '30+ dias'
+                        WHEN "Estancia Días" BETWEEN 1 AND 3 THEN '1-3 dias'
+                        WHEN "Estancia Días" BETWEEN 4 AND 7 THEN '4-7 dias'
+                        WHEN "Estancia Días" BETWEEN 8 AND 14 THEN '8-14 dias'
+                        WHEN "Estancia Días" BETWEEN 15 AND 30 THEN '15-30 dias'
+                        WHEN "Estancia Días" > 30 THEN '30+ dias'
                         ELSE 'Unknown'
                     END as rango_dias,
                     COUNT(*) as total
-                FROM INGRESOS_HOSPITALARIOS
-                WHERE fecha_alta IS NOT NULL
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                WHERE "Estancia Días" IS NOT NULL
                 GROUP BY 
                     CASE 
-                        WHEN (fecha_alta - fecha_ingreso) BETWEEN 1 AND 3 THEN '1-3 dias'
-                        WHEN (fecha_alta - fecha_ingreso) BETWEEN 4 AND 7 THEN '4-7 dias'
-                        WHEN (fecha_alta - fecha_ingreso) BETWEEN 8 AND 14 THEN '8-14 dias'
-                        WHEN (fecha_alta - fecha_ingreso) BETWEEN 15 AND 30 THEN '15-30 dias'
-                        WHEN (fecha_alta - fecha_ingreso) > 30 THEN '30+ dias'
+                        WHEN "Estancia Días" BETWEEN 1 AND 3 THEN '1-3 dias'
+                        WHEN "Estancia Días" BETWEEN 4 AND 7 THEN '4-7 dias'
+                        WHEN "Estancia Días" BETWEEN 8 AND 14 THEN '8-14 dias'
+                        WHEN "Estancia Días" BETWEEN 15 AND 30 THEN '15-30 dias'
+                        WHEN "Estancia Días" > 30 THEN '30+ dias'
                         ELSE 'Unknown'
                     END
                 ORDER BY 
@@ -318,7 +322,7 @@ class HealthDataService:
     @staticmethod
     def get_pacientes_list(connection, skip: int = 0, limit: int = 100) -> List[dict]:
         """
-        Get paginated list of patients.
+        Get paginated list of patients/registros.
         
         Args:
             connection: Database connection
@@ -331,9 +335,9 @@ class HealthDataService:
         try:
             cursor = connection.cursor()
             query = """
-                SELECT id_paciente, edad, genero, codigo_postal_region
-                FROM PACIENTES
-                ORDER BY id_paciente
+                SELECT NOMBRE, EDAD, SEXO, "Comunidad Autónoma", FECHA_DE_NACIMIENTO
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                ORDER BY NOMBRE
                 OFFSET :skip ROWS
                 FETCH NEXT :limit ROWS ONLY
             """
@@ -342,10 +346,11 @@ class HealthDataService:
             results = []
             for row in cursor:
                 results.append({
-                    "id_paciente": row[0],
+                    "nombre": row[0],
                     "edad": row[1],
-                    "genero": row[2],
-                    "codigo_postal_region": row[3]
+                    "sexo": row[2],
+                    "comunidad_autonoma": row[3],
+                    "fecha_de_nacimiento": row[4].isoformat() if row[4] else None
                 })
             
             cursor.close()
@@ -370,9 +375,11 @@ class HealthDataService:
         try:
             cursor = connection.cursor()
             query = """
-                SELECT id_diagnostico, codigo_cie10, descripcion, categoria
-                FROM DIAGNOSTICOS
-                ORDER BY id_diagnostico
+                SELECT "Diagnóstico Principal", "Categoría", COUNT(*) as casos
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                WHERE "Diagnóstico Principal" IS NOT NULL
+                GROUP BY "Diagnóstico Principal", "Categoría"
+                ORDER BY casos DESC
                 OFFSET :skip ROWS
                 FETCH NEXT :limit ROWS ONLY
             """
@@ -381,10 +388,9 @@ class HealthDataService:
             results = []
             for row in cursor:
                 results.append({
-                    "id_diagnostico": row[0],
-                    "codigo_cie10": row[1],
-                    "descripcion": row[2],
-                    "categoria": row[3]
+                    "diagnostico_principal": row[0],
+                    "categoria": row[1],
+                    "casos": row[2]
                 })
             
             cursor.close()
@@ -409,10 +415,12 @@ class HealthDataService:
         try:
             cursor = connection.cursor()
             query = """
-                SELECT id_ingreso, id_paciente, id_diagnostico, 
-                       fecha_ingreso, fecha_alta, tipo_ingreso
-                FROM INGRESOS_HOSPITALARIOS
-                ORDER BY id_ingreso
+                SELECT NOMBRE, FECHA_DE_INGRESO, FECHA_DE_FIN_CONTACTO, 
+                       "Estancia Días", "Diagnóstico Principal", "Categoría", 
+                       TIPO_ALTA, SERVICIO
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                WHERE FECHA_DE_INGRESO IS NOT NULL
+                ORDER BY FECHA_DE_INGRESO DESC
                 OFFSET :skip ROWS
                 FETCH NEXT :limit ROWS ONLY
             """
@@ -421,12 +429,14 @@ class HealthDataService:
             results = []
             for row in cursor:
                 results.append({
-                    "id_ingreso": row[0],
-                    "id_paciente": row[1],
-                    "id_diagnostico": row[2],
-                    "fecha_ingreso": row[3].isoformat() if row[3] else None,
-                    "fecha_alta": row[4].isoformat() if row[4] else None,
-                    "tipo_ingreso": row[5]
+                    "nombre": row[0],
+                    "fecha_de_ingreso": row[1].isoformat() if row[1] else None,
+                    "fecha_de_fin_contacto": row[2].isoformat() if row[2] else None,
+                    "estancia_dias": row[3],
+                    "diagnostico_principal": row[4],
+                    "categoria": row[5],
+                    "tipo_alta": row[6],
+                    "servicio": row[7]
                 })
             
             cursor.close()
@@ -434,3 +444,105 @@ class HealthDataService:
         except Exception as e:
             logger.error(f"Error getting admissions list: {str(e)}")
             raise
+    
+    @staticmethod
+    def get_comunidad_stats(connection) -> List[dict]:
+        """
+        Get statistics by Comunidad Autónoma.
+        
+        Args:
+            connection: Database connection
+            
+        Returns:
+            List of dictionaries with community statistics
+        """
+        try:
+            cursor = connection.cursor()
+            query = """
+                SELECT 
+                    "Comunidad Autónoma",
+                    COUNT(*) as total,
+                    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                WHERE "Comunidad Autónoma" IS NOT NULL
+                GROUP BY "Comunidad Autónoma"
+                ORDER BY total DESC
+            """
+            cursor.execute(query)
+            
+            results = []
+            for row in cursor:
+                results.append({
+                    "comunidad_autonoma": row[0],
+                    "total": row[1],
+                    "porcentaje": float(row[2])
+                })
+            
+            cursor.close()
+            return results
+        except Exception as e:
+            logger.error(f"Error getting community stats: {str(e)}")
+            raise
+    
+    @staticmethod
+    def get_servicio_stats(connection) -> List[dict]:
+        """
+        Get statistics by service.
+        
+        Args:
+            connection: Database connection
+            
+        Returns:
+            List of dictionaries with service statistics
+        """
+        try:
+            cursor = connection.cursor()
+            query = """
+                SELECT 
+                    SERVICIO,
+                    COUNT(*) as total,
+                    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
+                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                WHERE SERVICIO IS NOT NULL
+                GROUP BY SERVICIO
+                ORDER BY total DESC
+                FETCH FIRST 20 ROWS ONLY
+            """
+            cursor.execute(query)
+            
+            results = []
+            for row in cursor:
+                results.append({
+                    "servicio": row[0],
+                    "total": row[1],
+                    "porcentaje": float(row[2])
+                })
+            
+            cursor.close()
+            return results
+        except Exception as e:
+            logger.error(f"Error getting service stats: {str(e)}")
+            raise
+    
+    @staticmethod
+    def count_total_registros(connection) -> int:
+        """
+        Get total count of records.
+        
+        Args:
+            connection: Database connection
+            
+        Returns:
+            Total count of records
+        """
+        try:
+            cursor = connection.cursor()
+            query = "SELECT COUNT(*) FROM ENFERMEDADESMENTALESDIAGNOSTICO"
+            cursor.execute(query)
+            result = cursor.fetchone()
+            cursor.close()
+            return result[0] if result else 0
+        except Exception as e:
+            logger.error(f"Error counting records: {str(e)}")
+            raise
+
