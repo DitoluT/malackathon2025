@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, BarChart3 } from "lucide-react";
 import Header from "@/components/Header";
 import ConfigPanel, { ChartConfig } from "@/components/ConfigPanel";
@@ -10,6 +10,12 @@ const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [charts, setCharts] = useState<ChartConfig[]>([]);
   const { canEdit, canDelete, isDemo } = usePermissions();
+
+  useEffect(() => {
+    console.log('Index component mounted');
+    console.log('Charts:', charts);
+    console.log('Sidebar open:', sidebarOpen);
+  }, []);
 
   const handleGenerateChart = (config: ChartConfig) => {
     if (!canEdit()) {
