@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Sparkles, BarChart3, Brain, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://130.61.189.36:8000/api/v1';
+const API_BASE_URL = 'http://130.61.189.36:8000/api/v1';
 
 interface Statistics {
   total_records: number;
@@ -44,10 +45,10 @@ const QUERY_TEMPLATES: QueryTemplate[] = [
   {
     name: 'Distribución por Categoría de Diagnóstico',
     description: 'Analiza la distribución de diagnósticos por categoría principal',
-    query: `SELECT "Categoría" as categoria, COUNT(*) as total 
-FROM ENFERMEDADESMENTALESDIAGNOSTICO 
-WHERE "Categoría" IS NOT NULL 
-GROUP BY "Categoría" 
+    query: `SELECT CATEGORIA as categoria, COUNT(*) as total 
+FROM SALUD_MENTAL_FEATURED 
+WHERE CATEGORIA IS NOT NULL 
+GROUP BY CATEGORIA 
 ORDER BY total DESC`,
     category: 'diagnostico'
   },
@@ -65,8 +66,8 @@ ORDER BY total DESC`,
     ELSE '65+ años'
   END as rango_edad,
   COUNT(*) as total,
-  ROUND(AVG("Estancia Días"), 2) as estancia_promedio
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
+  ROUND(AVG(ESTANCIA_DIAS), 2) as estancia_promedio
+FROM SALUD_MENTAL_FEATURED
 WHERE EDAD IS NOT NULL
 GROUP BY CASE 
   WHEN EDAD BETWEEN 0 AND 17 THEN '0-17 años'
@@ -83,14 +84,10 @@ END`,
     name: 'Distribución por Género',
     description: 'Analiza la distribución por género y diagnósticos principales',
     query: `SELECT 
-  CASE 
-    WHEN SEXO = 1 THEN 'Hombre'
-    WHEN SEXO = 2 THEN 'Mujer'
-    ELSE 'No especificado'
-  END as genero, 
+  SEXO as genero, 
   COUNT(*) as total,
   ROUND(AVG(EDAD), 1) as edad_promedio
-FROM ENFERMEDADESMENTALESDIAGNOSTICO 
+FROM SALUD_MENTAL_FEATURED 
 WHERE SEXO IS NOT NULL 
 GROUP BY SEXO`,
     category: 'demografia'
@@ -98,13 +95,13 @@ GROUP BY SEXO`,
   {
     name: 'Análisis por Comunidad Autónoma',
     description: 'Analiza casos por comunidad autónoma y patrones regionales',
-    query: `SELECT "Comunidad Autónoma" as comunidad, 
+    query: `SELECT COMUNIDAD_AUTONOMA as comunidad, 
   COUNT(*) as total,
-  ROUND(AVG("Estancia Días"), 2) as estancia_promedio,
+  ROUND(AVG(ESTANCIA_DIAS), 2) as estancia_promedio,
   ROUND(AVG(COSTE_APR), 2) as coste_promedio
-FROM ENFERMEDADESMENTALESDIAGNOSTICO 
-WHERE "Comunidad Autónoma" IS NOT NULL 
-GROUP BY "Comunidad Autónoma" 
+FROM SALUD_MENTAL_FEATURED 
+WHERE COMUNIDAD_AUTONOMA IS NOT NULL 
+GROUP BY COMUNIDAD_AUTONOMA 
 ORDER BY total DESC`,
     category: 'geografico'
   },
@@ -113,37 +110,40 @@ ORDER BY total DESC`,
     description: 'Analiza la duración de estancia hospitalaria y costes asociados',
     query: `SELECT 
   CASE 
-    WHEN "Estancia Días" <= 7 THEN '1-7 días'
-    WHEN "Estancia Días" BETWEEN 8 AND 14 THEN '8-14 días'
-    WHEN "Estancia Días" BETWEEN 15 AND 30 THEN '15-30 días'
-    WHEN "Estancia Días" BETWEEN 31 AND 60 THEN '31-60 días'
+    WHEN ESTANCIA_DIAS <= 7 THEN '1-7 días'
+    WHEN ESTANCIA_DIAS BETWEEN 8 AND 14 THEN '8-14 días'
+    WHEN ESTANCIA_DIAS BETWEEN 15 AND 30 THEN '15-30 días'
+    WHEN ESTANCIA_DIAS BETWEEN 31 AND 60 THEN '31-60 días'
     ELSE 'Más de 60 días'
   END as duracion,
   COUNT(*) as total_casos,
-  ROUND(AVG("Estancia Días"), 2) as promedio_dias,
+  ROUND(AVG(ESTANCIA_DIAS), 2) as promedio_dias,
   ROUND(AVG(COSTE_APR), 2) as coste_promedio
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
-WHERE "Estancia Días" IS NOT NULL
+FROM SALUD_MENTAL_FEATURED
+WHERE ESTANCIA_DIAS IS NOT NULL
 GROUP BY CASE 
-  WHEN "Estancia Días" <= 7 THEN '1-7 días'
-  WHEN "Estancia Días" BETWEEN 8 AND 14 THEN '8-14 días'
-  WHEN "Estancia Días" BETWEEN 15 AND 30 THEN '15-30 días'
-  WHEN "Estancia Días" BETWEEN 31 AND 60 THEN '31-60 días'
+  WHEN ESTANCIA_DIAS <= 7 THEN '1-7 días'
+  WHEN ESTANCIA_DIAS BETWEEN 8 AND 14 THEN '8-14 días'
+  WHEN ESTANCIA_DIAS BETWEEN 15 AND 30 THEN '15-30 días'
+  WHEN ESTANCIA_DIAS BETWEEN 31 AND 60 THEN '31-60 días'
   ELSE 'Más de 60 días'
 END`,
     category: 'clinico'
   },
   {
-    name: 'Análisis de Reingresos',
-    description: 'Identifica patrones en reingresos hospitalarios',
+    name: 'Análisis de Larga Estancia',
+    description: 'Identifica patrones en pacientes con estancia prolongada',
     query: `SELECT 
-  REINGRESO as tipo_reingreso,
+  CASE 
+    WHEN LARGA_ESTANCIA = 1 THEN 'Larga Estancia'
+    ELSE 'Estancia Normal'
+  END as tipo_estancia,
   COUNT(*) as total,
-  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje,
-  ROUND(AVG("Estancia Días"), 2) as estancia_promedio
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
-WHERE REINGRESO IS NOT NULL
-GROUP BY REINGRESO
+  ROUND(AVG(ESTANCIA_DIAS), 2) as dias_promedio,
+  ROUND(AVG(COSTE_APR), 2) as coste_promedio
+FROM SALUD_MENTAL_FEATURED
+WHERE LARGA_ESTANCIA IS NOT NULL
+GROUP BY LARGA_ESTANCIA
 ORDER BY total DESC`,
     category: 'clinico'
   },
@@ -151,15 +151,15 @@ ORDER BY total DESC`,
     name: 'Análisis de Costes por Categoría',
     description: 'Analiza costes y recursos por categoría de diagnóstico',
     query: `SELECT 
-  "Categoría" as categoria,
+  CATEGORIA as categoria,
   COUNT(*) as casos,
   ROUND(AVG(COSTE_APR), 2) as coste_promedio,
   ROUND(MIN(COSTE_APR), 2) as coste_minimo,
   ROUND(MAX(COSTE_APR), 2) as coste_maximo,
-  ROUND(AVG("Estancia Días"), 2) as estancia_promedio
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
-WHERE "Categoría" IS NOT NULL AND COSTE_APR IS NOT NULL
-GROUP BY "Categoría"
+  ROUND(AVG(ESTANCIA_DIAS), 2) as estancia_promedio
+FROM SALUD_MENTAL_FEATURED
+WHERE CATEGORIA IS NOT NULL AND COSTE_APR IS NOT NULL
+GROUP BY CATEGORIA
 ORDER BY coste_promedio DESC`,
     category: 'recursos'
   },
@@ -169,9 +169,9 @@ ORDER BY coste_promedio DESC`,
     query: `SELECT 
   SERVICIO as servicio,
   COUNT(*) as total_pacientes,
-  ROUND(AVG("Estancia Días"), 2) as estancia_promedio,
+  ROUND(AVG(ESTANCIA_DIAS), 2) as estancia_promedio,
   ROUND(AVG(COSTE_APR), 2) as coste_promedio
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
+FROM SALUD_MENTAL_FEATURED
 WHERE SERVICIO IS NOT NULL
 GROUP BY SERVICIO
 ORDER BY total_pacientes DESC`,
@@ -184,9 +184,9 @@ ORDER BY total_pacientes DESC`,
   NIVEL_SEVERIDAD_APR as nivel_severidad,
   RIESGO_MORTALIDAD_APR as riesgo_mortalidad,
   COUNT(*) as casos,
-  ROUND(AVG("Estancia Días"), 2) as estancia_promedio,
+  ROUND(AVG(ESTANCIA_DIAS), 2) as estancia_promedio,
   ROUND(AVG(COSTE_APR), 2) as coste_promedio
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
+FROM SALUD_MENTAL_FEATURED
 WHERE NIVEL_SEVERIDAD_APR IS NOT NULL 
   AND RIESGO_MORTALIDAD_APR IS NOT NULL
 GROUP BY NIVEL_SEVERIDAD_APR, RIESGO_MORTALIDAD_APR
@@ -195,29 +195,25 @@ ORDER BY nivel_severidad DESC, riesgo_mortalidad DESC`,
   },
   {
     name: 'Tendencia Mensual de Ingresos',
-    description: 'Analiza patrones temporales de ingresos hospitalarios',
+    description: 'Analiza patrones temporales y predice tendencias futuras',
     query: `SELECT 
-  MES_DE_INGRESO as mes,
+  EXTRACT(YEAR FROM FECHA_INGRESO) as ano,
+  MES_INGRESO as mes,
   COUNT(*) as total_ingresos,
-  ROUND(AVG("Estancia Días"), 2) as estancia_promedio
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
-WHERE MES_DE_INGRESO IS NOT NULL
-GROUP BY MES_DE_INGRESO
+  ROUND(AVG(ESTANCIA_DIAS), 2) as estancia_promedio,
+  ROUND(AVG(COSTE_APR), 2) as coste_promedio,
+  ROUND(AVG(EDAD), 1) as edad_promedio,
+  COUNT(CASE WHEN NIVEL_SEVERIDAD_APR IN (3, 4) THEN 1 END) as casos_severos,
+  COUNT(CASE WHEN CIRCUNSTANCIA_CONTACTO = 1 THEN 1 END) as ingresos_urgentes,
+  ROUND(COUNT(CASE WHEN CIRCUNSTANCIA_CONTACTO = 1 THEN 1 END) * 100.0 / COUNT(*), 1) as porcentaje_urgentes,
+  COUNT(DISTINCT CATEGORIA) as categorias_distintas
+FROM SALUD_MENTAL_FEATURED
+WHERE MES_INGRESO IS NOT NULL 
+  AND FECHA_INGRESO IS NOT NULL
+GROUP BY EXTRACT(YEAR FROM FECHA_INGRESO), MES_INGRESO
 ORDER BY 
-  CASE MES_DE_INGRESO
-    WHEN 'Enero' THEN 1
-    WHEN 'Febrero' THEN 2
-    WHEN 'Marzo' THEN 3
-    WHEN 'Abril' THEN 4
-    WHEN 'Mayo' THEN 5
-    WHEN 'Junio' THEN 6
-    WHEN 'Julio' THEN 7
-    WHEN 'Agosto' THEN 8
-    WHEN 'Septiembre' THEN 9
-    WHEN 'Octubre' THEN 10
-    WHEN 'Noviembre' THEN 11
-    WHEN 'Diciembre' THEN 12
-  END`,
+  EXTRACT(YEAR FROM FECHA_INGRESO),
+  MES_INGRESO`,
     category: 'temporal'
   }
 ];
@@ -291,20 +287,20 @@ const AIAnalysisPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Panel de Configuración */}
-      <Card className="border-2 border-purple-400 bg-gradient-to-br from-purple-100 via-purple-50 to-white shadow-md">
-        <CardHeader className="border-b border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+      <Card className="border-2 border-purple-200 bg-white dark:bg-gray-900 shadow-sm">
+        <CardHeader className="border-b border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-950/20">
           <div className="flex items-center gap-2">
-            <Brain className="h-6 w-6 text-purple-700" />
-            <CardTitle className="text-purple-900">Análisis con IA Premium</CardTitle>
+            <Brain className="h-6 w-6 text-purple-700 dark:text-purple-400" />
+            <CardTitle className="text-gray-900 dark:text-gray-100">Análisis con IA Premium</CardTitle>
           </div>
-          <CardDescription className="text-gray-700 font-medium">
+          <CardDescription className="text-gray-700 dark:text-gray-300 font-medium">
             Genera insights avanzados combinando análisis estadístico y procesamiento con Gemini AI
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           {/* Template Selector */}
           <div className="space-y-2">
-            <Label htmlFor="template">Plantilla de Consulta</Label>
+            <Label htmlFor="template" className="text-gray-900 dark:text-gray-100 font-semibold">Plantilla de Consulta</Label>
             <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
               <SelectTrigger id="template">
                 <SelectValue placeholder="Selecciona una plantilla..." />
@@ -323,7 +319,7 @@ const AIAnalysisPanel: React.FC = () => {
               </SelectContent>
             </Select>
             {selectedTemplate && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {QUERY_TEMPLATES.find(t => t.name === selectedTemplate)?.description}
               </p>
             )}
@@ -331,26 +327,39 @@ const AIAnalysisPanel: React.FC = () => {
 
           {/* Custom Query */}
           <div className="space-y-2">
-            <Label htmlFor="query">Query SQL Personalizada</Label>
+            <Label htmlFor="query" className="text-gray-900 dark:text-gray-100 font-semibold">Query SQL Personalizada</Label>
             <Textarea
               id="query"
               value={customQuery}
               onChange={(e) => setCustomQuery(e.target.value)}
-              placeholder="SELECT ... FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE ..."
+              placeholder="SELECT ... FROM SALUD_MENTAL_FEATURED WHERE ..."
               className="font-mono text-sm min-h-[120px]"
             />
           </div>
 
           {/* User Question */}
           <div className="space-y-2">
-            <Label htmlFor="question">Pregunta Específica para la IA (opcional)</Label>
+            <Label htmlFor="question" className="text-gray-900 dark:text-gray-100 font-semibold">Pregunta Específica para la IA (opcional)</Label>
             <Textarea
               id="question"
               value={userQuestion}
               onChange={(e) => setUserQuestion(e.target.value)}
-              placeholder="¿Qué patrones específicos quieres identificar? ¿Qué recomendaciones necesitas?"
+              placeholder={
+                selectedTemplate === 'Tendencia Mensual de Ingresos'
+                  ? "Ejemplo: ¿Cómo se comportarán los ingresos en los próximos 6 meses? ¿Qué meses requieren más recursos?"
+                  : "¿Qué patrones específicos quieres identificar? ¿Qué recomendaciones necesitas?"
+              }
               className="min-h-[80px]"
             />
+            {selectedTemplate === 'Tendencia Mensual de Ingresos' && (
+              <Alert className="mt-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20">
+                <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <AlertDescription className="text-xs text-amber-800 dark:text-amber-200">
+                  💡 <strong>Análisis Predictivo Activado:</strong> Esta consulta incluye datos temporales multi-año. 
+                  Gemini analizará tendencias históricas para proyectar comportamientos futuros.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           {/* Analyze Button */}
@@ -378,11 +387,11 @@ const AIAnalysisPanel: React.FC = () => {
       {result && (
         <div className="space-y-6">
           {/* Empirical Statistics */}
-          <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-            <CardHeader>
+          <Card className="border-2 border-blue-200 bg-white dark:bg-gray-900 shadow-sm">
+            <CardHeader className="bg-blue-50 dark:bg-blue-950/20">
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-blue-600" />
-                <CardTitle className="text-lg">Datos Empíricos</CardTitle>
+                <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Datos Empíricos</CardTitle>
                 <Badge variant="secondary" className="ml-auto">
                   Estadísticas Calculadas
                 </Badge>
@@ -391,28 +400,28 @@ const AIAnalysisPanel: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Total Registros</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Registros</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {result.statistics.total_records}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Categorías Únicas</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Categorías Únicas</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {result.statistics.unique_categories}
                   </p>
                 </div>
                 {result.statistics.metrics && (
                   <>
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Media</p>
-                      <p className="text-2xl font-bold text-blue-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Media</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {result.statistics.metrics.mean}
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Mediana</p>
-                      <p className="text-2xl font-bold text-blue-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Mediana</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {result.statistics.metrics.median}
                       </p>
                     </div>
@@ -421,23 +430,23 @@ const AIAnalysisPanel: React.FC = () => {
               </div>
 
               {result.statistics.metrics && (
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <p className="text-muted-foreground">Desv. Estándar</p>
-                      <p className="font-semibold">{result.statistics.metrics.std_dev}</p>
+                      <p className="text-gray-600 dark:text-gray-400">Desv. Estándar</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{result.statistics.metrics.std_dev}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Mínimo</p>
-                      <p className="font-semibold">{result.statistics.metrics.min}</p>
+                      <p className="text-gray-600 dark:text-gray-400">Mínimo</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{result.statistics.metrics.min}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Máximo</p>
-                      <p className="font-semibold">{result.statistics.metrics.max}</p>
+                      <p className="text-gray-600 dark:text-gray-400">Máximo</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{result.statistics.metrics.max}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Rango</p>
-                      <p className="font-semibold">{result.statistics.metrics.range}</p>
+                      <p className="text-gray-600 dark:text-gray-400">Rango</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{result.statistics.metrics.range}</p>
                     </div>
                   </div>
                 </div>
@@ -446,42 +455,39 @@ const AIAnalysisPanel: React.FC = () => {
           </Card>
 
           {/* AI Insights */}
-          <Card className="border-2 border-purple-300 bg-gradient-to-br from-purple-100 via-purple-50 to-white shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
+          <Card className="border-2 border-purple-200 bg-white dark:bg-gray-900 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
-                <CardTitle className="text-lg">Insights Generados por IA</CardTitle>
-                <Badge variant="secondary" className="ml-auto bg-white/20 text-white border-white/30">
+                <CardTitle className="text-lg font-bold">Insights Generados por IA</CardTitle>
+                <Badge className="ml-auto bg-white/20 text-white border-white/30 hover:bg-white/30">
                   Powered by Gemini
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="pt-6">
-              <Alert className="border-purple-300 bg-gradient-to-br from-purple-50 to-white shadow-sm">
-                <TrendingUp className="h-4 w-4 text-purple-700" />
-                <AlertDescription className="text-sm leading-relaxed whitespace-pre-wrap text-gray-800 font-medium">
-                  {result.ai_insight}
-                </AlertDescription>
-              </Alert>
+              <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg p-6">
+                <MarkdownRenderer content={result.ai_insight} className="text-sm" />
+              </div>
             </CardContent>
           </Card>
 
           {/* Query Info */}
-          <Card className="border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-white shadow-md">
-            <CardHeader className="bg-gradient-to-r from-blue-100 to-cyan-50 border-b border-blue-200">
-              <CardTitle className="text-sm flex items-center gap-2 text-blue-900">
-                <AlertCircle className="h-4 w-4 text-blue-700" />
+          <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+            <CardHeader className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <CardTitle className="text-sm flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 Información de la Consulta
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm pt-4">
               <div>
-                <span className="text-gray-700 font-medium">Registros analizados:</span>{' '}
-                <span className="font-bold text-blue-700">{result.rows_analyzed}</span>
+                <span className="text-gray-700 dark:text-gray-300 font-medium">Registros analizados:</span>{' '}
+                <span className="font-bold text-gray-900 dark:text-gray-100">{result.rows_analyzed}</span>
               </div>
               <div>
-                <span className="text-gray-700 font-medium">Query ejecutada:</span>
-                <pre className="mt-2 p-3 bg-gradient-to-br from-gray-100 to-blue-50 border border-blue-200 rounded-md text-xs overflow-x-auto font-mono text-gray-800">
+                <span className="text-gray-700 dark:text-gray-300 font-medium">Query ejecutada:</span>
+                <pre className="mt-2 p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-xs overflow-x-auto font-mono text-gray-900 dark:text-gray-100">
                   {result.query_executed}
                 </pre>
               </div>

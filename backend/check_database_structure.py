@@ -6,8 +6,21 @@ en Oracle Database.
 
 import oracledb
 import sys
+import os
 
+ORACLE_USER="ADMIN"
+ORACLE_PASSWORD="GaussCousinsAreHere25"
+ORACLE_DSN="malackathon2025_low"
+# Wallet directory (relative to backend folder) - automatic path resolution
+ORACLE_CONFIG_DIR="Wallet_Malackathon2025"
+ORACLE_WALLET_LOCATION="Wallet_Malackathon2025"
+ORACLE_WALLET_PASSWORD="malackathon25"
 
+DB_USER = ORACLE_USER
+DB_PASSWORD = ORACLE_PASSWORD
+TNS_ALIAS = ORACLE_DSN
+WALLET_DIR = os.path.join(os.path.dirname(__file__), ORACLE_WALLET_LOCATION)
+WALLET_PASSWORD = ORACLE_WALLET_PASSWORD
 
 def create_connection():
     """Crear conexión usando la configuración que funciona."""
@@ -21,7 +34,7 @@ def create_connection():
     )
 
 
-def check_table_structure(table_name="ENFERMEDADESMENTALESDIAGNOSTICO"):
+def check_table_structure(table_name="SALUD_MENTAL_FEATURED"):
     """Verificar la estructura de una tabla."""
     print("=" * 80)
     print(f"📊 ESTRUCTURA DE LA TABLA: {table_name}")
@@ -270,7 +283,7 @@ if __name__ == "__main__":
     print("Malackathon 2025\n")
     
     # Verificar tabla específica
-    table_name = "ENFERMEDADESMENTALESDIAGNOSTICO"
+    table_name = "DIAGNOSTICOS"
     
     if len(sys.argv) > 1:
         table_name = sys.argv[1].upper()

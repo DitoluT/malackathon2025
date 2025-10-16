@@ -20,7 +20,7 @@ class AIAnalysisService:
         if self.ai_enabled:
             try:
                 genai.configure(api_key=settings.GEMINI_API_KEY)
-                self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                self.model = genai.GenerativeModel('gemini-2.0-flash')
                 logger.info("Gemini AI (Flash 2.0) initialized successfully")
             except Exception as e:
                 logger.error(f"Failed to initialize Gemini AI: {str(e)}")
@@ -130,14 +130,62 @@ MUESTRA DE DATOS (primeros 10 registros):
 
 """
         
-        prompt += """PROPORCIONA:
-1. Un análisis conciso de los patrones principales encontrados
-2. Insights clínicos relevantes para profesionales de salud mental
-3. Recomendaciones accionables basadas en los datos
-4. Posibles áreas de preocupación o atención prioritaria
-5. Tendencias significativas que merecen investigación adicional
+        # Detectar si es una query temporal para añadir instrucciones de predicción
+        is_temporal = any(keyword in query.upper() for keyword in ['MES_INGRESO', 'FECHA_INGRESO', 'FECHA', 'TEMPORAL', 'EXTRACT', 'YEAR', 'MONTH'])
+        
+        if is_temporal:
+            prompt += """PROPORCIONA UN ANÁLISIS PREDICTIVO EN FORMATO MARKDOWN:
 
-Responde en español, de forma clara y profesional. Máximo 400 palabras."""
+## 📊 Patrones Temporales Identificados
+Describe tendencias mensuales/anuales claras en los datos con estadísticas específicas
+
+## 📈 Análisis de Estacionalidad
+Identifica meses con mayor/menor actividad y posibles causas
+
+## 🔮 Predicción Fundamentada
+Basándote en los patrones históricos, proyecta cómo se comportarán los próximos 3-6 meses
+- Incluye rangos numéricos específicos (ej: "incremento del 15-20%")
+- Usa listas con viñetas para claridad
+
+## ⚠️ Factores de Riesgo
+Señala períodos críticos que requieren preparación adicional de recursos
+
+## 💡 Recomendaciones Estratégicas
+Acciones concretas numeradas para optimizar recursos:
+1. Acción específica 1
+2. Acción específica 2
+3. Acción específica 3
+
+## 📌 Métricas Clave a Monitorear
+Lista de indicadores específicos para validar o ajustar las predicciones
+
+**Importante:** Usa negritas para resaltar datos clave, listas con viñetas/numeradas, y emojis para secciones.
+Responde en español, máximo 500 palabras."""
+        else:
+            prompt += """PROPORCIONA UN ANÁLISIS EN FORMATO MARKDOWN:
+
+## 🔍 Patrones Principales
+Análisis conciso de los patrones encontrados con datos específicos
+
+## 🏥 Insights Clínicos
+Relevantes para profesionales de salud mental:
+- Insight 1 con dato específico
+- Insight 2 con dato específico
+- Insight 3 con dato específico
+
+## 💡 Recomendaciones Accionables
+1. Recomendación específica 1
+2. Recomendación específica 2
+3. Recomendación específica 3
+
+## ⚠️ Áreas de Atención Prioritaria
+Posibles preocupaciones que requieren acción inmediata
+
+## 📈 Tendencias Significativas
+Aspectos que merecen investigación adicional
+
+**Importante:** Usa negritas para datos clave, listas organizadas, y emojis para secciones.
+Responde en español, máximo 400 palabras."""
         
         return prompt
     

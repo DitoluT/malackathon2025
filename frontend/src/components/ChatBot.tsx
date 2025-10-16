@@ -28,7 +28,7 @@ const ChatBot: React.FC = () => {
     {
       id: '1',
       type: 'bot',
-      content: '¡Hola! 👋 Soy tu asistente inteligente de análisis de datos de salud mental.\n\n💡 **Comando especial**: Escribe "select ai" seguido de tu consulta para buscar datos reales en la base de datos.\n\nEjemplos:\n• "select ai casos por comunidad autónoma"\n• "select ai pacientes con depresión"\n• "select ai estancia media por servicio"\n\n¿En qué puedo ayudarte?',
+      content: '¡Hola! 👋 Soy tu asistente inteligente de análisis de datos de salud mental.\n\n💡 Puedo generar **gráficas y análisis automáticamente**. Solo pregúntame lo que necesites:\n\n**Ejemplos:**\n• "¿Cuántos casos hay por comunidad autónoma?"\n• "Muéstrame una gráfica de pacientes por edad"\n• "Estancia media por servicio"\n• "Distribución de diagnósticos"\n• "Costes por tipo de ingreso"\n\n¿En qué puedo ayudarte? 📊',
       timestamp: new Date(),
     }
   ]);
@@ -191,7 +191,7 @@ const ChatBot: React.FC = () => {
       {
         id: '1',
         type: 'bot',
-        content: '¡Hola! 👋 Soy tu asistente inteligente de análisis de datos de salud mental.\n\n💡 **Comando especial**: Escribe "select ai" seguido de tu consulta para buscar datos reales en la base de datos.\n\nEjemplos:\n• "select ai casos por comunidad autónoma"\n• "select ai pacientes con depresión"\n• "select ai estancia media por servicio"\n\n¿En qué puedo ayudarte?',
+        content: '¡Hola! 👋 Soy tu asistente inteligente de análisis de datos de salud mental.\n\n💡 Puedo generar **gráficas y análisis automáticamente**. Solo pregúntame lo que necesites:\n\n**Ejemplos:**\n• "¿Cuántos casos hay por comunidad autónoma?"\n• "Muéstrame una gráfica de pacientes por edad"\n• "Estancia media por servicio"\n• "Distribución de diagnósticos"\n• "Costes por tipo de ingreso"\n\n¿En qué puedo ayudarte? 📊',
         timestamp: new Date(),
       }
     ]);

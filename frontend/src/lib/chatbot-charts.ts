@@ -64,7 +64,8 @@ const executeSQL = async (sqlQuery: string): Promise<any[]> => {
     
     console.log('🔍 Ejecutando SQL query:', sqlQuery);
     
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://130.61.189.36:8000/api/v1';
+    // 1. Ejecutar la query SQL contra el backend
+    const apiUrl = 'http://130.61.189.36:8000/api/v1';
     const response = await fetch(`${apiUrl}/query/execute`, {
       method: 'POST',
       headers: {
@@ -135,7 +136,16 @@ export const generateResponseWithGemini = async (
     }
 
     // DETECTAR: ¿Es un comando "select ai"?
-    const isSelectAI = prompt.toLowerCase().trim().startsWith('select ai');
+    // Detectar palabras clave que indican necesidad de datos
+    const dataKeywords = ['cuántos', 'cuántas', 'cantidad', 'total', 'distribución', 'promedio', 'media', 
+                          'muestra', 'dame', 'lista', 'casos', 'pacientes', 'diagnósticos', 'comparar',
+                          'tendencia', 'por mes', 'por año', 'comunidad', 'edad', 'género', 'coste', 'gráfica', 'grafica', 'chart'];
+    
+    const promptLower = prompt.toLowerCase();
+    const needsData = dataKeywords.some(keyword => promptLower.includes(keyword)) || 
+                      promptLower.trim().startsWith('select ai');
+    
+    const isSelectAI = needsData;
     
     if (isSelectAI) {
       console.log('🔍 Detectado comando SELECT AI - Ejecutando workflow SQL');
