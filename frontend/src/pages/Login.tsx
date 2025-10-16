@@ -113,7 +113,7 @@ const Login = () => {
               </Button>
             </form>
 
-            {/* Demo credentials info */}
+            {/* Demo credentials info 
             <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border">
               <p className="text-xs font-semibold text-foreground mb-3">
                 👤 Usuarios de prueba:
@@ -156,7 +156,7 @@ const Login = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div>*/}
           </CardContent>
         </Card>
 
