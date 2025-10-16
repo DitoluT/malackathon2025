@@ -174,7 +174,7 @@ const Index = () => {
           {!apiConnected && apiConnected !== null && (
             <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
               <p className="text-xs text-red-600 dark:text-red-400 text-center">
-                ⚠️ No se pudo conectar con el backend. Asegúrate de que el servidor esté corriendo en http://localhost:8000
+                ⚠️ No se pudo conectar con el backend. Asegúrate de que el servidor esté corriendo en http://130.61.189.36:8000
               </p>
             </div>
           )}

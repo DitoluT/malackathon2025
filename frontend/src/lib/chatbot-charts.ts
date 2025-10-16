@@ -64,7 +64,7 @@ const executeSQL = async (sqlQuery: string): Promise<any[]> => {
     
     console.log('🔍 Ejecutando SQL query:', sqlQuery);
     
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://130.61.189.36:8000/api/v1';
     const response = await fetch(`${apiUrl}/query/execute`, {
       method: 'POST',
       headers: {

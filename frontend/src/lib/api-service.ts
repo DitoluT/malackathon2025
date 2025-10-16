@@ -3,7 +3,7 @@
  * Provides methods to fetch data and execute custom queries
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://130.61.189.36:8000/api/v1';
 
 // Types for API responses
 export interface HealthResponse {
