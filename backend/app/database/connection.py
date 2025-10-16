@@ -27,16 +27,17 @@ class DatabaseConnection:
             if self._pool is None:
                 logger.info("Initializing Oracle Database connection pool with mTLS...")
                 logger.info(f"Using TNS alias: {settings.ORACLE_DSN}")
-                logger.info(f"Wallet location: {settings.ORACLE_WALLET_LOCATION}")
+                logger.info(f"Config dir (absolute): {settings.oracle_config_dir_absolute}")
+                logger.info(f"Wallet location (absolute): {settings.oracle_wallet_location_absolute}")
                 
-                # Create connection pool using THIN mode with mTLS (same as test.py)
+                # Conexión simple y directa
                 self._pool = oracledb.create_pool(
                     user=settings.ORACLE_USER,
                     password=settings.ORACLE_PASSWORD,
-                    dsn=settings.ORACLE_DSN,                    # TNS alias (malackathon2025_low)
-                    config_dir=settings.ORACLE_CONFIG_DIR,      # directory with tnsnames.ora
-                    wallet_location=settings.ORACLE_WALLET_LOCATION,  # directory with ewallet.pem
-                    wallet_password=settings.ORACLE_WALLET_PASSWORD,  # wallet password
+                    dsn=settings.ORACLE_DSN,
+                    config_dir=settings.oracle_config_dir_absolute,
+                    wallet_location=settings.oracle_wallet_location_absolute,
+                    wallet_password=settings.ORACLE_WALLET_PASSWORD,
                     min=2,
                     max=10,
                     increment=1

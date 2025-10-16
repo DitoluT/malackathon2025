@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings
 from typing import List
+import os
+from pathlib import Path
 
 
 class Settings(BaseSettings):
@@ -15,6 +17,24 @@ class Settings(BaseSettings):
     ORACLE_CONFIG_DIR: str
     ORACLE_WALLET_LOCATION: str
     ORACLE_WALLET_PASSWORD: str
+    
+    @property
+    def oracle_config_dir_absolute(self) -> str:
+        """Convert relative path to absolute path for Oracle config directory."""
+        if os.path.isabs(self.ORACLE_CONFIG_DIR):
+            return self.ORACLE_CONFIG_DIR
+        # Resolve relative to backend directory
+        backend_dir = Path(__file__).parent.parent
+        return str((backend_dir / self.ORACLE_CONFIG_DIR).resolve())
+    
+    @property
+    def oracle_wallet_location_absolute(self) -> str:
+        """Convert relative path to absolute path for Oracle wallet location."""
+        if os.path.isabs(self.ORACLE_WALLET_LOCATION):
+            return self.ORACLE_WALLET_LOCATION
+        # Resolve relative to backend directory
+        backend_dir = Path(__file__).parent.parent
+        return str((backend_dir / self.ORACLE_WALLET_LOCATION).resolve())
     
     # API Configuration
     API_V1_PREFIX: str = "/api/v1"
