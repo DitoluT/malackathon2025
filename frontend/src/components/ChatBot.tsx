@@ -28,7 +28,7 @@ const ChatBot: React.FC = () => {
     {
       id: '1',
       type: 'bot',
-      content: '¡Hola! 👋 Soy tu asistente inteligente de análisis de datos de salud mental. Puedo responderte con texto o generar visualizaciones cuando lo considere útil. Recuerdo toda nuestra conversación, así que puedes hacer preguntas de seguimiento. ¡Pregúntame lo que quieras!',
+      content: '¡Hola! 👋 Soy tu asistente inteligente de análisis de datos de salud mental.\n\n💡 **Comando especial**: Escribe "select ai" seguido de tu consulta para buscar datos reales en la base de datos.\n\nEjemplos:\n• "select ai casos por comunidad autónoma"\n• "select ai pacientes con depresión"\n• "select ai estancia media por servicio"\n\n¿En qué puedo ayudarte?',
       timestamp: new Date(),
     }
   ]);
@@ -75,7 +75,7 @@ const ChatBot: React.FC = () => {
       const botResponse = await processBotResponse(currentInput);
       setMessages(prev => [...prev, botResponse]);
       
-      // Actualizar historial conversacional
+      // Actualizar historial conversacional CON LOS DATOS REALES
       setConversationHistory(prev => [
         ...prev,
         { role: 'user', parts: [{ text: currentInput }] },
@@ -83,11 +83,42 @@ const ChatBot: React.FC = () => {
           role: 'model', 
           parts: [{ 
             text: botResponse.chartData 
-              ? `[Gráfica generada: ${botResponse.chartData.title}]` 
+              ? (() => {
+                  // Incluir los datos reales en el historial para que Gemini los recuerde
+                  const chartType = botResponse.chartData.type === 'table' ? 'Tabla' : 'Gráfica';
+                  let dataText = `[${chartType} generada: ${botResponse.chartData.title}]\n\n`;
+                  dataText += `📊 DATOS REALES OBTENIDOS DE LA BASE DE DATOS:\n`;
+                  dataText += `Consulta ejecutada con éxito. Total de registros: ${botResponse.chartData.data?.length || 0}\n\n`;
+                  
+                  if (botResponse.chartData.data && Array.isArray(botResponse.chartData.data)) {
+                    // IMPORTANTE: Guardar todos los datos en formato claro
+                    dataText += `DATOS COMPLETOS:\n`;
+                    botResponse.chartData.data.forEach((item: any, index: number) => {
+                      const entries = Object.entries(item)
+                        .filter(([key]) => key !== 'fill') // Excluir propiedades técnicas
+                        .map(([key, value]) => `${key}: ${value}`)
+                        .join(', ');
+                      dataText += `${index + 1}. ${entries}\n`;
+                    });
+                    
+                    // Agregar un resumen para fácil acceso
+                    dataText += `\n📋 RESUMEN: Estos son los datos reales de la base de datos ENFERMEDADESMENTALESDIAGNOSTICO. El usuario puede preguntarme sobre estos números específicos y debo responder basándome en ESTOS datos, no en datos simulados.`;
+                  }
+                  
+                  return dataText;
+                })()
               : botResponse.content 
           }] 
         }
       ]);
+      
+      console.log('💾 Historial actualizado:', conversationHistory.length + 2, 'mensajes');
+      
+      // Debug: Mostrar el último elemento del historial si tiene datos
+      if (botResponse.chartData) {
+        console.log('📊 Datos guardados en historial (últimos 100 chars):', 
+          conversationHistory[conversationHistory.length - 1]?.parts[0]?.text.substring(0, 100));
+      }
       
     } catch (error) {
       console.error('Error en handleSendMessage:', error);
@@ -116,6 +147,15 @@ const ChatBot: React.FC = () => {
           id: Date.now().toString(),
           type: 'bot',
           content: '📊 He generado esta visualización para ti:',
+          timestamp: new Date(),
+          chartData: response.content,
+        };
+      } else if (response.type === 'table') {
+        console.log('📋 Gemini generó una tabla');
+        return {
+          id: Date.now().toString(),
+          type: 'bot',
+          content: '📋 Aquí están los resultados:',
           timestamp: new Date(),
           chartData: response.content,
         };
@@ -151,7 +191,7 @@ const ChatBot: React.FC = () => {
       {
         id: '1',
         type: 'bot',
-        content: '¡Hola! 👋 Soy tu asistente inteligente de análisis de datos de salud mental. Puedo responderte con texto o generar visualizaciones cuando lo considere útil. Recuerdo toda nuestra conversación, así que puedes hacer preguntas de seguimiento. ¡Pregúntame lo que quieras!',
+        content: '¡Hola! 👋 Soy tu asistente inteligente de análisis de datos de salud mental.\n\n💡 **Comando especial**: Escribe "select ai" seguido de tu consulta para buscar datos reales en la base de datos.\n\nEjemplos:\n• "select ai casos por comunidad autónoma"\n• "select ai pacientes con depresión"\n• "select ai estancia media por servicio"\n\n¿En qué puedo ayudarte?',
         timestamp: new Date(),
       }
     ]);
@@ -221,8 +261,12 @@ const ChatBot: React.FC = () => {
           {/* Mensajes */}
           <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
             <div className="space-y-4">
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
+              {messages.map((message, index) => (
+                <ChatMessage 
+                  key={message.id} 
+                  message={message} 
+                  isStreaming={index === messages.length - 1 && message.type === 'bot'}
+                />
               ))}
               {isTyping && (
                 <div className="flex items-start gap-2">

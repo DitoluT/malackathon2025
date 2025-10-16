@@ -1,4 +1,5 @@
-// Funciones para generar datos de gráficas con Gemini Flash
+// Funciones para generar respuestas con Gemini Flash
+// Workflow: "select ai" → ejecuta SQL | mensaje normal → respuesta conversacional
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface ChartData {
@@ -10,271 +11,93 @@ interface ChartData {
   colors?: string[];
 }
 
-// Datos de ejemplo para demostración
-const demoDataSets = {
-  diagnosesByCategory: [
-    { name: 'Depresión', value: 342, pacientes: 342 },
-    { name: 'Ansiedad', value: 289, pacientes: 289 },
-    { name: 'Trastorno Bipolar', value: 156, pacientes: 156 },
-    { name: 'Esquizofrenia', value: 98, pacientes: 98 },
-    { name: 'TOC', value: 74, pacientes: 74 },
-    { name: 'Otros', value: 142, pacientes: 142 },
-  ],
+interface TableData {
+  type: 'table';
+  title: string;
+  data: any[];
+  columns: string[];
+}
 
-  diagnosesByAge: [
-    { name: '18-25', value: 145 },
-    { name: '26-35', value: 267 },
-    { name: '36-45', value: 312 },
-    { name: '46-55', value: 198 },
-    { name: '56-65', value: 156 },
-    { name: '65+', value: 89 },
-  ],
-
-  temporalTrend: [
-    { name: 'Ene', value: 87 },
-    { name: 'Feb', value: 92 },
-    { name: 'Mar', value: 103 },
-    { name: 'Abr', value: 98 },
-    { name: 'May', value: 115 },
-    { name: 'Jun', value: 121 },
-    { name: 'Jul', value: 108 },
-    { name: 'Ago', value: 95 },
-    { name: 'Sep', value: 112 },
-    { name: 'Oct', value: 128 },
-    { name: 'Nov', value: 134 },
-    { name: 'Dic', value: 118 },
-  ],
-
-  diagnosisByGender: [
-    { name: 'Mujeres', value: 612 },
-    { name: 'Hombres', value: 489 },
-    { name: 'Otro', value: 32 },
-  ],
-
-  hospitalStay: [
-    { name: '1-3 días', value: 234 },
-    { name: '4-7 días', value: 456 },
-    { name: '8-14 días', value: 312 },
-    { name: '15-30 días', value: 145 },
-    { name: '30+ días', value: 54 },
-  ],
-
-  admissionType: [
-    { name: 'Urgente', value: 567 },
-    { name: 'Programado', value: 398 },
-    { name: 'Referido', value: 236 },
-  ],
-};
-
-export const generateDemoChart = (userInput: string): ChartData => {
-  const input = userInput.toLowerCase();
-
-  // Detectar tipo de gráfica solicitada
-  if (input.includes('edad') || input.includes('age')) {
-    return {
-      type: 'bar',
-      data: demoDataSets.diagnosesByAge,
-      title: 'Distribución de Diagnósticos por Edad',
-      dataKey: 'value',
-      xAxisKey: 'name',
-      colors: ['#3b82f6'],
-    };
-  }
-
-  if (input.includes('tiempo') || input.includes('temporal') || input.includes('tendencia') || input.includes('mes') || input.includes('año')) {
-    return {
-      type: 'area',
-      data: demoDataSets.temporalTrend,
-      title: 'Tendencia Temporal de Ingresos (2024)',
-      dataKey: 'value',
-      xAxisKey: 'name',
-      colors: ['#8b5cf6'],
-    };
-  }
-
-  if (input.includes('género') || input.includes('genero') || input.includes('sexo') || input.includes('gender')) {
-    return {
-      type: 'pie',
-      data: demoDataSets.diagnosisByGender,
-      title: 'Distribución por Género',
-      dataKey: 'value',
-      colors: ['#ec4899', '#3b82f6', '#10b981'],
-    };
-  }
-
-  if (input.includes('estancia') || input.includes('hospitalización') || input.includes('hospitalizacion') || input.includes('días') || input.includes('dias')) {
-    return {
-      type: 'bar',
-      data: demoDataSets.hospitalStay,
-      title: 'Duración de Estancia Hospitalaria',
-      dataKey: 'value',
-      xAxisKey: 'name',
-      colors: ['#f59e0b'],
-    };
-  }
-
-  if (input.includes('ingreso') || input.includes('admisión') || input.includes('admission') || input.includes('tipo')) {
-    return {
-      type: 'pie',
-      data: demoDataSets.admissionType,
-      title: 'Tipo de Ingreso Hospitalario',
-      dataKey: 'value',
-      colors: ['#ef4444', '#10b981', '#06b6d4'],
-    };
-  }
-
-  if (input.includes('línea') || input.includes('linea') || input.includes('line') || input.includes('evolución') || input.includes('evolucion')) {
-    return {
-      type: 'line',
-      data: demoDataSets.temporalTrend,
-      title: 'Evolución Mensual de Casos',
-      dataKey: 'value',
-      xAxisKey: 'name',
-      colors: ['#10b981'],
-    };
-  }
-
-  // Por defecto, mostrar diagnósticos por categoría
-  return {
-    type: 'bar',
-    data: demoDataSets.diagnosesByCategory,
-    title: 'Frecuencia de Diagnósticos por Categoría',
-    dataKey: 'value',
-    xAxisKey: 'name',
-    colors: ['#3b82f6'],
-  };
-};
-
-// Función para integración con Gemini API
-export const generateChartWithGemini = async (
-  prompt: string,
-  apiKey?: string
-): Promise<ChartData> => {
-  try {
-    const { getSystemPrompt } = await import('./gemini-config');
-    const systemPrompt = await getSystemPrompt();
-    apiKey = apiKey || import.meta.env.VITE_GEMINI_API_KEY;
-    
-    if (!apiKey) {
-      throw new Error('API Key no configurada');
-    }
-
-    console.log('🤖 Usando Gemini 2.0 Flash para generar gráfica...');
-    
-    // Inicializar Google Generative AI
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-
-    const fullPrompt = `${systemPrompt}
-
-SOLICITUD DEL USUARIO: "${prompt}"
-
-Genera una visualización apropiada. Responde SOLO con el JSON (sin \`\`\`json ni explicaciones).`;
-
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    const textContent = response.text();
-    
-    console.log('Gemini raw response:', textContent);
-    
-    // Extraer JSON (puede venir con markdown ```json ... ``` o texto adicional)
-    let jsonMatch = textContent.match(/\{[\s\S]*\}/);
-    
-    if (!jsonMatch) {
-      // Intentar limpiar el texto primero
-      const cleaned = textContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-    }
-    
-    if (!jsonMatch) {
-      console.error('Respuesta de Gemini no contiene JSON:', textContent);
-      throw new Error('No se pudo extraer JSON de la respuesta de Gemini');
-    }
-
-    const chartData = JSON.parse(jsonMatch[0]);
-    console.log('✅ Chart data parsed:', chartData);
-    
-    // Validar estructura
-    return validateChartData(chartData);
-
-  } catch (error) {
-    console.error('❌ Error en generateChartWithGemini:', error);
-    
-    // Fallback a datos de demostración si Gemini falla
-    console.log('⚠️ Usando datos de demostración como fallback');
-    return generateDemoChart(prompt);
-  }
-};
-
-// Función para validar y sanitizar datos de gráfica
-export const validateChartData = (data: any): ChartData => {
-  // Validación básica
-  if (!data.type || !['bar', 'line', 'pie', 'area'].includes(data.type)) {
-    throw new Error('Tipo de gráfica inválido');
-  }
-
-  if (!Array.isArray(data.data) || data.data.length === 0) {
-    throw new Error('Datos de gráfica inválidos');
-  }
-
-  if (!data.title || typeof data.title !== 'string') {
-    throw new Error('Título de gráfica inválido');
-  }
-
-  return data as ChartData;
-};
-
-// Función para generar respuestas de texto con Gemini
-export const generateTextResponseWithGemini = async (
-  prompt: string,
-  apiKey?: string
-): Promise<string> => {
-  try {
-    const { getSystemPrompt } = await import('./gemini-config');
-    const systemPrompt = await getSystemPrompt();
-    apiKey = apiKey || import.meta.env.VITE_GEMINI_API_KEY;
-    
-    if (!apiKey) {
-      throw new Error('API Key no configurada');
-    }
-
-    console.log('🤖 Usando Gemini 2.0 Flash para respuesta de texto...');
-    
-    // Inicializar Google Generative AI
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-
-    const fullPrompt = `${systemPrompt}
-
-PREGUNTA DEL USUARIO: "${prompt}"
-
-Responde de forma concisa (máximo 2-3 líneas) y profesional. Si es relevante, sugiere una visualización.`;
-
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    const textContent = response.text();
-    
-    console.log('✅ Respuesta generada:', textContent);
-    return textContent;
-
-  } catch (error) {
-    console.error('❌ Error en generateTextResponseWithGemini:', error);
-    return 'Interesante pregunta. ¿Te gustaría ver una visualización de datos relacionada?';
-  }
-};
-
-// Interfaz para el historial de conversación
 interface ConversationHistory {
   role: 'user' | 'model';
   parts: { text: string }[];
 }
 
-// Función unificada con memoria conversacional
+// Función para validar queries SQL (seguridad contra SQL injection)
+const validateSQLQuery = (query: string): boolean => {
+  const queryUpper = query.toUpperCase().trim();
+  
+  if (!queryUpper.startsWith('SELECT')) {
+    console.error('❌ Query no empieza con SELECT');
+    return false;
+  }
+  
+  const dangerousKeywords = [
+    'DROP', 'DELETE', 'TRUNCATE', 'INSERT', 'UPDATE', 
+    'CREATE', 'ALTER', 'GRANT', 'REVOKE', 'EXECUTE',
+    'EXEC', 'CALL', 'MERGE', 'RENAME'
+  ];
+  
+  for (const keyword of dangerousKeywords) {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    if (regex.test(query)) {
+      console.error(`❌ Query contiene palabra peligrosa: ${keyword}`);
+      return false;
+    }
+  }
+  
+  const semicolonCount = (query.match(/;/g) || []).length;
+  if (semicolonCount > 1 || (semicolonCount === 1 && !query.trim().endsWith(';'))) {
+    console.error('❌ Query contiene múltiples statements');
+    return false;
+  }
+  
+  return true;
+};
+
+// Función para ejecutar query SQL en el backend
+const executeSQL = async (sqlQuery: string): Promise<any[]> => {
+  try {
+    if (!validateSQLQuery(sqlQuery)) {
+      throw new Error('Query SQL no válida o insegura');
+    }
+    
+    console.log('🔍 Ejecutando SQL query:', sqlQuery);
+    
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+    const response = await fetch(`${apiUrl}/query/execute`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: sqlQuery,
+        limit: 100
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Error ejecutando query');
+    }
+    
+    const result = await response.json();
+    console.log('✅ Query ejecutada, resultados:', result.data.length, 'filas');
+    
+    return result.data;
+    
+  } catch (error) {
+    console.error('❌ Error ejecutando SQL:', error);
+    throw error;
+  }
+};
+
+// Función principal con workflow simplificado
 export const generateResponseWithGemini = async (
   prompt: string,
   conversationHistory: ConversationHistory[] = [],
   apiKey?: string
-): Promise<{ type: 'chart' | 'text'; content: ChartData | string }> => {
+): Promise<{ type: 'chart' | 'text' | 'table'; content: ChartData | TableData | string }> => {
   try {
     const { getSystemPrompt } = await import('./gemini-config');
     const systemPrompt = await getSystemPrompt();
@@ -284,14 +107,9 @@ export const generateResponseWithGemini = async (
       throw new Error('API Key no configurada');
     }
 
-    console.log('🤖 Gemini 2.0 Flash con memoria conversacional...');
-    console.log('📚 Historial:', conversationHistory.length, 'mensajes previos');
-    
-    // Inicializar Google Generative AI
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-    // Crear chat con historial
     const chat = model.startChat({
       history: [
         {
@@ -300,51 +118,204 @@ export const generateResponseWithGemini = async (
         },
         {
           role: 'model',
-          parts: [{ text: '¡Entendido! Estoy listo para ayudarte con análisis de datos de salud mental. Puedo generar visualizaciones o responder preguntas. ¿En qué puedo ayudarte?' }]
+          parts: [{ text: '¡Entendido! Responderé tus preguntas normalmente. Si quieres que consulte la base de datos real, usa "select ai" seguido de tu petición. ¿En qué puedo ayudarte?' }]
         },
         ...conversationHistory
       ],
     });
-
-    // Enviar mensaje actual
-    const result = await chat.sendMessage(prompt);
-    const response = await result.response;
-    const textContent = response.text().trim();
     
-    console.log('📨 Respuesta de Gemini:', textContent);
-    
-    // Detectar si Gemini generó un JSON (gráfica)
-    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-    
-    if (jsonMatch) {
-      try {
-        const chartData = JSON.parse(jsonMatch[0]);
-        
-        // Validar que es una gráfica válida
-        if (chartData.type && chartData.data && chartData.title) {
-          console.log('📊 Gemini decidió generar una gráfica');
-          return {
-            type: 'chart',
-            content: validateChartData(chartData)
-          };
-        }
-      } catch (parseError) {
-        console.log('⚠️ JSON encontrado pero no es una gráfica válida');
+    // DEBUG: Verificar que el historial contiene datos
+    console.log('🔍 Historial completo pasado a Gemini:', conversationHistory.length, 'mensajes');
+    if (conversationHistory.length > 0) {
+      const lastMessage = conversationHistory[conversationHistory.length - 1];
+      if (lastMessage && lastMessage.parts && lastMessage.parts[0]) {
+        console.log('📋 Último mensaje en historial (primeros 200 chars):', 
+          lastMessage.parts[0].text.substring(0, 200));
       }
     }
+
+    // DETECTAR: ¿Es un comando "select ai"?
+    const isSelectAI = prompt.toLowerCase().trim().startsWith('select ai');
     
-    // Si no es JSON o no es válido, es texto
-    console.log('💬 Gemini decidió responder con texto');
-    return {
-      type: 'text',
-      content: textContent
-    };
+    if (isSelectAI) {
+      console.log('🔍 Detectado comando SELECT AI - Ejecutando workflow SQL');
+      
+      // Extraer la petición (quitar "select ai")
+      const userRequest = prompt.replace(/^select ai\s*/i, '').trim();
+      console.log('�� Petición del usuario:', userRequest);
+      
+      // PASO 1: Gemini genera la query SQL
+      const sqlPrompt = `El usuario quiere consultar la base de datos: "${userRequest}"
+
+Genera una query SQL SELECT apropiada. Recuerda:
+- Usar alias CATEGORY y VALUE para los resultados
+- La tabla es ENFERMEDADESMENTALESDIAGNOSTICO
+- Columnas con espacios entre comillas: "Comunidad Autónoma", "Diagnóstico Principal", etc.
+
+Responde SOLO con JSON:
+{
+  "sqlQuery": "SELECT ...",
+  "explanation": "breve explicación de qué busca la query"
+}`;
+
+      const sqlResult = await chat.sendMessage(sqlPrompt);
+      const sqlResponse = await sqlResult.response;
+      const sqlContent = sqlResponse.text().trim();
+      
+      console.log('📨 Respuesta SQL de Gemini:', sqlContent);
+      
+      let jsonMatch = sqlContent.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        const cleaned = sqlContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      }
+      
+      if (!jsonMatch) {
+        return {
+          type: 'text',
+          content: '❌ No pude generar una query SQL válida. Intenta reformular tu petición.'
+        };
+      }
+      
+      const sqlDecision = JSON.parse(jsonMatch[0]);
+      
+      if (!sqlDecision.sqlQuery) {
+        return {
+          type: 'text',
+          content: '❌ No pude generar una query SQL. Intenta ser más específico.'
+        };
+      }
+      
+      // PASO 2: Ejecutar la query
+      let sqlData: any[];
+      try {
+        sqlData = await executeSQL(sqlDecision.sqlQuery);
+      } catch (sqlError) {
+        return {
+          type: 'text',
+          content: `❌ Error ejecutando consulta: ${sqlError instanceof Error ? sqlError.message : 'Error desconocido'}`
+        };
+      }
+      
+      if (!sqlData || sqlData.length === 0) {
+        return {
+          type: 'text',
+          content: '⚠️ La consulta no devolvió resultados.'
+        };
+      }
+      
+      console.log('✅ Datos obtenidos:', sqlData.length, 'filas');
+      
+      // PASO 3: Gemini decide cómo mostrar los datos
+      const repPrompt = `He ejecutado la query y obtuve estos datos:
+${JSON.stringify(sqlData.slice(0, 10), null, 2)}
+${sqlData.length > 10 ? `\n... y ${sqlData.length - 10} filas más (total: ${sqlData.length})` : ''}
+
+Petición original: "${userRequest}"
+
+Decide cómo mostrar estos datos. Responde SOLO con JSON:
+
+Para TABLA (muchas columnas, datos detallados):
+{
+  "type": "table",
+  "title": "Título descriptivo"
+}
+
+Para GRÁFICA (datos agregados, visualización):
+{
+  "type": "bar" | "line" | "pie" | "area",
+  "title": "Título descriptivo",
+  "data": [{"name": "...", "value": ...}]
+}`;
+
+      const repResult = await chat.sendMessage(repPrompt);
+      const repResponse = await repResult.response;
+      const repContent = repResponse.text().trim();
+      
+      console.log('📨 Decisión de representación:', repContent);
+      
+      let repJsonMatch = repContent.match(/\{[\s\S]*\}/);
+      if (!repJsonMatch) {
+        const cleaned = repContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        repJsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      }
+      
+      if (!repJsonMatch) {
+        // Fallback: mostrar como tabla
+        return {
+          type: 'table',
+          content: {
+            type: 'table',
+            title: sqlDecision.explanation || 'Resultados de la consulta',
+            data: sqlData,
+            columns: Object.keys(sqlData[0] || {})
+          }
+        };
+      }
+      
+      const representation = JSON.parse(repJsonMatch[0]);
+      
+      // PASO 4: Devolver resultado
+      if (representation.type === 'table') {
+        console.log('📋 Mostrando como tabla');
+        return {
+          type: 'table',
+          content: {
+            type: 'table',
+            title: representation.title,
+            data: sqlData,
+            columns: Object.keys(sqlData[0] || {})
+          }
+        };
+      } else {
+        console.log('📊 Mostrando como gráfica:', representation.type);
+        
+        let chartData = representation.data;
+        
+        if (!chartData || chartData.length === 0) {
+          chartData = sqlData.map(row => {
+            const category = row.CATEGORY || row.category || row.NAME || row.name || 'Sin categoría';
+            const value = row.VALUE || row.value || row.COUNT || row.count || 0;
+            return {
+              name: String(category),
+              value: Number(value)
+            };
+          });
+        }
+        
+        return {
+          type: 'chart',
+          content: {
+            type: representation.type,
+            title: representation.title,
+            data: chartData,
+            dataKey: 'value',
+            xAxisKey: 'name'
+          }
+        };
+      }
+      
+    } else {
+      // NO es "select ai" → Respuesta conversacional normal
+      console.log('💬 Mensaje normal - Respuesta conversacional');
+      
+      const result = await chat.sendMessage(prompt);
+      const response = await result.response;
+      const textContent = response.text().trim();
+      
+      console.log('📨 Respuesta de Gemini:', textContent);
+      
+      return {
+        type: 'text',
+        content: textContent
+      };
+    }
 
   } catch (error) {
     console.error('❌ Error en generateResponseWithGemini:', error);
     return {
       type: 'text',
-      content: 'Interesante pregunta. ¿Te gustaría ver una visualización de datos relacionada?'
+      content: `❌ Hubo un error: ${error instanceof Error ? error.message : 'Error desconocido'}`
     };
   }
 };
