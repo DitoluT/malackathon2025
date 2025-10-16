@@ -32,6 +32,11 @@ python-multipart==0.0.6
 requests==2.31.0
 
 # ===================================
+# AI / Machine Learning
+# ===================================
+google-generativeai==0.3.2
+
+# ===================================
 # Additional Dependencies
 # ===================================
 # For type hints and better development experience

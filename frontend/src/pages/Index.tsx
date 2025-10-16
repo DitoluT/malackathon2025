@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Menu, BarChart3, Database, CheckCircle2 } from "lucide-react";
+import { Menu, BarChart3, Database, CheckCircle2, Sparkles } from "lucide-react";
 import Header from "@/components/Header";
 import ConfigPanel, { ChartConfig } from "@/components/ConfigPanel";
 import DynamicChartCard from "@/components/DynamicChartCardNew";
+import AIAnalysisPanel from "@/components/AIAnalysisPanel";
 import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
 import { checkHealth } from "@/lib/api-service";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -87,13 +89,28 @@ const Index = () => {
             <Menu className="h-5 w-5" />
           </button>
 
-          {/* Canvas Header */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <BarChart3 className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold text-foreground">Canvas de Visualización</h2>
-              </div>
+          {/* Main Content with Tabs */}
+          <Tabs defaultValue="canvas" className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+              <TabsTrigger value="canvas" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Canvas Dinámico
+              </TabsTrigger>
+              <TabsTrigger value="ai-analysis" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Análisis con IA
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Canvas Tab */}
+            <TabsContent value="canvas" className="space-y-6">
+              {/* Canvas Header */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <BarChart3 className="h-6 w-6 text-primary" />
+                    <h2 className="text-2xl font-bold text-foreground">Canvas de Visualización</h2>
+                  </div>
               
               {/* API Status Indicator */}
               <div className="flex items-center gap-2 text-xs">
@@ -187,6 +204,13 @@ const Index = () => {
               </p>
             </div>
           )}
+            </TabsContent>
+
+            {/* AI Analysis Tab */}
+            <TabsContent value="ai-analysis" className="space-y-6">
+              <AIAnalysisPanel />
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </div>

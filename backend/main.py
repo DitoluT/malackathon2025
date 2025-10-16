@@ -6,7 +6,7 @@ import time
 
 from app.config import settings
 from app.database.connection import db_connection
-from app.api import health, statistics, data, query
+from app.api import health, statistics, data, query, ai_analysis
 
 # Configure logging
 logging.basicConfig(
@@ -124,6 +124,7 @@ app.include_router(health.router, prefix=settings.API_V1_PREFIX)
 app.include_router(statistics.router, prefix=settings.API_V1_PREFIX)
 app.include_router(data.router, prefix=settings.API_V1_PREFIX)
 app.include_router(query.router, prefix=settings.API_V1_PREFIX)
+app.include_router(ai_analysis.router, prefix=f"{settings.API_V1_PREFIX}/ai", tags=["AI Analysis"])
 
 
 @app.get("/", tags=["Root"])
