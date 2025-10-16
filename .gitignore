@@ -1,6 +1,7 @@
 # Datos sensibles o archivos grandes
 eda/raw_data/
 eda/cleaned_data/
+eda/definitive_data
 
 # Python
 __pycache__/
