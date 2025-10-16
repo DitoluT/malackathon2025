@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings
 from typing import List
+import os
+from pathlib import Path
 
 
 class Settings(BaseSettings):
@@ -12,9 +14,25 @@ class Settings(BaseSettings):
     ORACLE_USER: str
     ORACLE_PASSWORD: str
     ORACLE_DSN: str
-    ORACLE_CONFIG_DIR: str
-    ORACLE_WALLET_LOCATION: str
+    ORACLE_CONFIG_DIR: str = ""  # Will be calculated from WALLET_DIR
+    ORACLE_WALLET_LOCATION: str = ""  # Will be calculated from WALLET_DIR
     ORACLE_WALLET_PASSWORD: str
+    
+    # Wallet directory relative to backend folder
+    WALLET_DIR: str = "Wallet_Malackathon2025"
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Calculate absolute paths for wallet and config directories
+        # Get the backend directory (parent of app/)
+        backend_dir = Path(__file__).parent.parent.resolve()
+        wallet_path = backend_dir / self.WALLET_DIR
+        
+        # Use environment variables if provided, otherwise use calculated paths
+        if not self.ORACLE_CONFIG_DIR:
+            self.ORACLE_CONFIG_DIR = str(wallet_path)
+        if not self.ORACLE_WALLET_LOCATION:
+            self.ORACLE_WALLET_LOCATION = str(wallet_path)
     
     # API Configuration
     API_V1_PREFIX: str = "/api/v1"
