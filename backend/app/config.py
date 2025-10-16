@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 import os
 from pathlib import Path
 
@@ -14,25 +14,29 @@ class Settings(BaseSettings):
     ORACLE_USER: str
     ORACLE_PASSWORD: str
     ORACLE_DSN: str
-    ORACLE_CONFIG_DIR: str = ""  # Will be calculated from WALLET_DIR
-    ORACLE_WALLET_LOCATION: str = ""  # Will be calculated from WALLET_DIR
     ORACLE_WALLET_PASSWORD: str
     
-    # Wallet directory relative to backend folder
+    # Wallet directory relative to backend folder (optional, defaults to Wallet_Malackathon2025)
     WALLET_DIR: str = "Wallet_Malackathon2025"
+    
+    # These will be auto-calculated if not provided
+    ORACLE_CONFIG_DIR: Optional[str] = None
+    ORACLE_WALLET_LOCATION: Optional[str] = None
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Calculate absolute paths for wallet and config directories
-        # Get the backend directory (parent of app/)
-        backend_dir = Path(__file__).parent.parent.resolve()
-        wallet_path = backend_dir / self.WALLET_DIR
         
-        # Use environment variables if provided, otherwise use calculated paths
-        if not self.ORACLE_CONFIG_DIR:
-            self.ORACLE_CONFIG_DIR = str(wallet_path)
-        if not self.ORACLE_WALLET_LOCATION:
-            self.ORACLE_WALLET_LOCATION = str(wallet_path)
+        # Calculate absolute paths for wallet and config directories if not provided
+        if not self.ORACLE_CONFIG_DIR or not self.ORACLE_WALLET_LOCATION:
+            # Get the backend directory (parent of app/)
+            backend_dir = Path(__file__).parent.parent.resolve()
+            wallet_path = backend_dir / self.WALLET_DIR
+            
+            # Set the paths if not already set
+            if not self.ORACLE_CONFIG_DIR:
+                self.ORACLE_CONFIG_DIR = str(wallet_path)
+            if not self.ORACLE_WALLET_LOCATION:
+                self.ORACLE_WALLET_LOCATION = str(wallet_path)
     
     # API Configuration
     API_V1_PREFIX: str = "/api/v1"
