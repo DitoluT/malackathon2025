@@ -128,25 +128,59 @@ async def execute_custom_query(
     try:
         query = request.query.strip()
         
+        # Log detallado de la petición
+        logger.info("=" * 80)
+        logger.info("🔍 [CUSTOM QUERY] Nueva petición recibida")
+        logger.info(f"📝 Query original: {query}")
+        logger.info(f"🔑 Parámetros: {request.params}")
+        logger.info(f"📊 Límite: {request.limit}")
+        logger.info("=" * 80)
+        
         # Agregar LIMIT si no está presente (para Oracle usamos FETCH FIRST)
         query_upper = query.upper()
         if 'FETCH FIRST' not in query_upper and 'ROWNUM' not in query_upper:
             # Agregar limit automáticamente
             query = f"{query} FETCH FIRST {request.limit} ROWS ONLY"
+            logger.info(f"➕ Límite añadido automáticamente: FETCH FIRST {request.limit} ROWS ONLY")
+        
+        logger.info(f"✅ Query final a ejecutar: {query}")
+        
+        # Set autocommit for SELECT queries (should be read-only)
+        connection.autocommit = True
         
         cursor = connection.cursor()
         
-        # Ejecutar query con o sin parámetros
-        if request.params:
-            cursor.execute(query, **request.params)
-        else:
-            cursor.execute(query)
+        try:
+            # Ejecutar query con o sin parámetros
+            if request.params:
+                logger.info(f"🔐 Ejecutando con parámetros: {request.params}")
+                cursor.execute(query, **request.params)
+            else:
+                logger.info("📝 Ejecutando sin parámetros")
+                cursor.execute(query)
+            
+            logger.info("✅ Query ejecutado, obteniendo metadatos...")
+            
+            # Obtener nombres de columnas
+            columns = [desc[0] for desc in cursor.description]
+            logger.info(f"📋 Columnas obtenidas: {columns}")
+            
+            logger.info("📥 Fetching resultados...")
+            
+            # Obtener resultados
+            rows = cursor.fetchall()
+            logger.info(f"📊 Número de filas obtenidas: {len(rows)}")
+        finally:
+            cursor.close()
+            logger.info("✅ Cursor cerrado")
         
-        # Obtener nombres de columnas
-        columns = [desc[0] for desc in cursor.description]
+        # Mostrar primeras 3 filas para debugging
+        if rows:
+            logger.info(f"🔍 Primeras {min(3, len(rows))} filas:")
+            for i, row in enumerate(rows[:3]):
+                logger.info(f"   Fila {i+1}: {row}")
         
-        # Obtener resultados
-        rows = cursor.fetchall()
+        logger.info("🔄 Convirtiendo resultados a diccionarios...")
         
         # Convertir a lista de diccionarios
         data = []
@@ -162,12 +196,17 @@ async def execute_custom_query(
                 row_dict[col_name] = value
             data.append(row_dict)
         
-        cursor.close()
+        logger.info(f"✅ Datos convertidos: {len(data)} registros")
         
         # Mensaje de advertencia si se alcanzó el límite
         message = None
         if len(data) == request.limit:
             message = f"Results limited to {request.limit} rows. Use a more specific query or increase the limit."
+            logger.warning(f"⚠️ {message}")
+        
+        logger.info("✅ Query ejecutado exitosamente")
+        logger.info(f"📤 Retornando {len(data)} filas")
+        logger.info("=" * 80)
         
         return {
             "success": True,
@@ -180,16 +219,32 @@ async def execute_custom_query(
         
     except oracledb.Error as e:
         error_obj, = e.args
-        logger.error(f"Database error executing custom query: {error_obj.message}")
+        logger.error("=" * 80)
+        logger.error(f"❌ [DATABASE ERROR] Error ejecutando query")
+        logger.error(f"Query: {query}")
+        logger.error(f"Params: {request.params}")
+        logger.error(f"Error: {error_obj.message}")
+        logger.error(f"Code: {error_obj.code}")
+        logger.error("=" * 80)
         raise HTTPException(
             status_code=500, 
             detail=f"Database error: {error_obj.message}"
         )
     except ValueError as e:
-        logger.warning(f"Invalid query rejected: {str(e)}")
+        logger.warning("=" * 80)
+        logger.warning(f"⚠️ [VALIDATION ERROR] Query inválido rechazado")
+        logger.warning(f"Query: {request.query}")
+        logger.warning(f"Error: {str(e)}")
+        logger.warning("=" * 80)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error executing custom query: {str(e)}")
+        logger.error("=" * 80)
+        logger.error(f"❌ [UNEXPECTED ERROR] Error inesperado")
+        logger.error(f"Query: {query if 'query' in locals() else request.query}")
+        logger.error(f"Params: {request.params}")
+        logger.error(f"Error: {str(e)}")
+        logger.error(f"Type: {type(e).__name__}")
+        logger.error("=" * 80)
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 

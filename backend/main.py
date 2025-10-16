@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
+import time
 
 from app.config import settings
 from app.database.connection import db_connection
@@ -89,6 +90,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Add logging middleware to track all requests
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all incoming requests with detailed information."""
+    start_time = time.time()
+    
+    # Log request details
+    logger.info("=" * 80)
+    logger.info(f"🌐 [HTTP REQUEST] {request.method} {request.url.path}")
+    logger.info(f"📍 Full URL: {request.url}")
+    logger.info(f"🔤 Query params: {dict(request.query_params)}")
+    logger.info(f"🌍 Client: {request.client.host if request.client else 'Unknown'}")
+    
+    # Note: No leemos el body aquí porque consumiría el stream
+    # El logging del body se hace en cada endpoint individual
+    
+    # Process request
+    response = await call_next(request)
+    
+    # Log response
+    process_time = (time.time() - start_time) * 1000
+    logger.info(f"✅ Status: {response.status_code} | Time: {process_time:.2f}ms")
+    logger.info("=" * 80)
+    
+    return response
+
 
 # Include routers
 app.include_router(health.router, prefix=settings.API_V1_PREFIX)
