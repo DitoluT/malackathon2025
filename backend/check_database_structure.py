@@ -7,12 +7,6 @@ en Oracle Database.
 import oracledb
 import sys
 
-# Configuración de conexión (misma que test.py)
-DB_USER = "ADMIN"
-DB_PASSWORD = "GaussCousinsAreHere25"
-WALLET_DIR = "/home/diego/Documents/malackathon2025/backend/Wallet_Malackathon2025"
-TNS_ALIAS = "malackathon2025_low"
-WALLET_PASSWORD = "malackathon25"
 
 
 def create_connection():
