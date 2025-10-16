@@ -89,3 +89,45 @@ All colors MUST be HSL.
     transition: var(--transition-smooth);
   }
 }
+
+/* Estilos para Markdown en ChatBot */
+@layer components {
+  .prose {
+    @apply text-foreground;
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3 {
+    @apply text-foreground font-bold;
+  }
+
+  .prose p {
+    @apply text-foreground;
+  }
+
+  .prose strong {
+    @apply text-primary font-semibold;
+  }
+
+  .prose code {
+    @apply bg-secondary text-primary px-1 py-0.5 rounded text-xs;
+  }
+
+  .prose pre {
+    @apply bg-secondary p-3 rounded-lg overflow-x-auto;
+  }
+
+  .prose ul,
+  .prose ol {
+    @apply text-foreground;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-primary pl-3 italic text-muted-foreground;
+  }
+
+  .prose a {
+    @apply text-primary hover:underline;
+  }
+}

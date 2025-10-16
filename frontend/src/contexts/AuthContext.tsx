@@ -30,17 +30,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Cargar usuario desde localStorage al iniciar
   useEffect(() => {
+    console.log('AuthContext: Initializing');
     const storedUser = localStorage.getItem('auth_user');
+    console.log('AuthContext: Stored user:', storedUser);
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        console.log('AuthContext: Setting user:', parsedUser);
+        setUser(parsedUser);
       } catch (error) {
+        console.error('AuthContext: Error parsing user:', error);
         localStorage.removeItem('auth_user');
       }
     }
   }, []);
 
   const login = (username: string, password: string): boolean => {
+    console.log('AuthContext: Login attempt for:', username);
     const foundUser = USERS.find(
       u => u.username === username && u.password === password
     );
@@ -51,11 +57,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: foundUser.role,
         displayName: foundUser.displayName,
       };
+      console.log('AuthContext: Login successful:', userSession);
       setUser(userSession);
       localStorage.setItem('auth_user', JSON.stringify(userSession));
       return true;
     }
 
+    console.log('AuthContext: Login failed');
     return false;
   };
 
