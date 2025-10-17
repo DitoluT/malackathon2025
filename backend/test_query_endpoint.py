@@ -67,9 +67,9 @@ def test_grouped_query():
     print("=" * 80)
     
     query = {
-        "query": '''SELECT "Categoría" as category, COUNT(*) as value
+        "query": '''SELECT CATEGORIA as category, COUNT(*) as value
 FROM SALUD_MENTAL_FEATURED
-GROUP BY "Categoría"
+GROUP BY CATEGORIA
 ORDER BY value DESC''',
         "limit": 10
     }
@@ -113,10 +113,10 @@ def test_query_with_filter():
     print("=" * 80)
     
     query = {
-        "query": '''SELECT "Categoría" as category, COUNT(*) as value
+        "query": '''SELECT CATEGORIA as category, COUNT(*) as value
 FROM SALUD_MENTAL_FEATURED
-WHERE "Categoría" LIKE :searchText
-GROUP BY "Categoría"
+WHERE CATEGORIA LIKE :searchText
+GROUP BY CATEGORIA
 ORDER BY value DESC''',
         "params": {
             "searchText": "%Esquizofrenia%"

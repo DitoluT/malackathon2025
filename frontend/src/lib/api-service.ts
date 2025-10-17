@@ -183,17 +183,17 @@ export function buildQuery(
   // Map field names to actual column names
   const columnMapping: Record<string, string> = {
     // Categorical fields
-    'categoria': '"Categoría"',
-    'diagnostico': '"Diagnóstico Principal"',
-    'comunidad': '"Comunidad Autónoma"',
+    'categoria': 'CATEGORIA',
+    'diagnostico': 'DIAGNOSTICO_PRINCIPAL',
+    'comunidad': 'COMUNIDAD_AUTONOMA',
     'servicio': 'SERVICIO',
     'sexo': 'SEXO',
     'procedencia': 'PROCEDENCIA',
     'tipo_alta': 'TIPO_ALTA',
-    'circunstancia_contacto': 'CIRCUNSTANCIA_DE_CONTACTO',
+    'circunstancia_contacto': 'CIRCUNSTANCIA_CONTACTO',
     'reingreso': 'REINGRESO',
-    'mes_ingreso': 'MES_DE_INGRESO',
-    'pais_nacimiento': '"País Nacimiento"',
+    'mes_ingreso': 'MES_INGRESO',
+    'pais_nacimiento': 'PAIS_NACIMIENTO',
     'ccaa_residencia': 'CCAA_RESIDENCIA',
     'tipo_gdr_ap': 'TIPO_GDR_AP',
     'tipo_gdr_apr': 'TIPO_GDR_APR',
@@ -202,11 +202,11 @@ export function buildQuery(
     'ingreso_uci': 'INGRESO_EN_UCI',
     // Numerical fields
     'edad': 'EDAD',
-    'estancia': '"Estancia Días"',
+    'estancia': 'ESTANCIA_DIAS',
     'coste': 'COSTE_APR',
-    'dias_uci': '"Días UCI"',
+    'dias_uci': 'DIAS_UCI',
     'edad_ingreso': 'EDAD_EN_INGRESO',
-    'fecha_ingreso': 'FECHA_DE_INGRESO',
+    'fecha_ingreso': 'FECHA_INGRESO',
   };
 
   const xColumn = columnMapping[xAxis] || xAxis;
@@ -270,17 +270,17 @@ export async function executeQueryWithTextFilters(
 
   const columnMapping: Record<string, string> = {
     // Categorical fields
-    'categoria': '"Categoría"',
-    'diagnostico': '"Diagnóstico Principal"',
-    'comunidad': '"Comunidad Autónoma"',
+    'categoria': 'CATEGORIA',
+    'diagnostico': 'DIAGNOSTICO_PRINCIPAL',
+    'comunidad': 'COMUNIDAD_AUTONOMA',
     'servicio': 'SERVICIO',
     'sexo': 'SEXO',
     'procedencia': 'PROCEDENCIA',
     'tipo_alta': 'TIPO_ALTA',
-    'circunstancia_contacto': 'CIRCUNSTANCIA_DE_CONTACTO',
+    'circunstancia_contacto': 'CIRCUNSTANCIA_CONTACTO',
     'reingreso': 'REINGRESO',
-    'mes_ingreso': 'MES_DE_INGRESO',
-    'pais_nacimiento': '"País Nacimiento"',
+    'mes_ingreso': 'MES_INGRESO',
+    'pais_nacimiento': 'PAIS_NACIMIENTO',
     'ccaa_residencia': 'CCAA_RESIDENCIA',
     'tipo_gdr_ap': 'TIPO_GDR_AP',
     'tipo_gdr_apr': 'TIPO_GDR_APR',
@@ -289,11 +289,11 @@ export async function executeQueryWithTextFilters(
     'ingreso_uci': 'INGRESO_EN_UCI',
     // Numerical fields
     'edad': 'EDAD',
-    'estancia': '"Estancia Días"',
+    'estancia': 'ESTANCIA_DIAS',
     'coste': 'COSTE_APR',
-    'dias_uci': '"Días UCI"',
+    'dias_uci': 'DIAS_UCI',
     'edad_ingreso': 'EDAD_EN_INGRESO',
-    'fecha_ingreso': 'FECHA_DE_INGRESO',
+    'fecha_ingreso': 'FECHA_INGRESO',
   };
 
   const xColumn = columnMapping[xAxis] || xAxis;

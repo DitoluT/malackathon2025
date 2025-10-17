@@ -79,7 +79,8 @@ class QueryExample(BaseModel):
     - Results are limited to prevent memory issues
     
     **Tips:**
-    - Use double quotes for column names with spaces: "Categoría", "Estancia Días"
+    - Column names do NOT have spaces: CATEGORIA, ESTANCIA_DIAS, COMUNIDAD_AUTONOMA
+    - Never use quotes for column names - all are plain SQL identifiers
     - Use parameters for dynamic values to prevent SQL injection
     - The limit parameter will be applied automatically if not in your query
     """,
