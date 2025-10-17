@@ -22,7 +22,7 @@ export interface ChartConfig {
   title: string;
 }
 
-// Campos disponibles desde la base de datos real (ENFERMEDADESMENTALESDIAGNOSTICO)
+// Campos disponibles desde la base de datos real (SALUD_MENTAL_FEATURED)
 const availableFields = {
   categorical: [
     { value: "categoria", label: "Categoría de Diagnóstico" },

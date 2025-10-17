@@ -64,7 +64,7 @@ try:
     print(f"✅ Test query: {result}")
     
     # Contar registros
-    cursor.execute("SELECT COUNT(*) FROM ENFERMEDADESMENTALESDIAGNOSTICO")
+    cursor.execute("SELECT COUNT(*) FROM SALUD_MENTAL_FEATURED")
     count = cursor.fetchone()[0]
     print(f"✅ Registros en tabla: {count:,}")
     

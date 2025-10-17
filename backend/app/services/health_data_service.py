@@ -30,7 +30,7 @@ class HealthDataService:
                     "Categoría",
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 WHERE "Categoría" IS NOT NULL
                 GROUP BY "Categoría"
                 ORDER BY total DESC
@@ -77,7 +77,7 @@ class HealthDataService:
                         ELSE 'Unknown'
                     END as rango_edad,
                     COUNT(*) as total
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 WHERE EDAD IS NOT NULL
                 GROUP BY 
                     CASE 
@@ -139,7 +139,7 @@ class HealthDataService:
                     END as sexo,
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 WHERE SEXO IS NOT NULL
                 GROUP BY SEXO
                 ORDER BY total DESC
@@ -178,7 +178,7 @@ class HealthDataService:
                     CIRCUNSTANCIA_DE_CONTACTO,
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 WHERE CIRCUNSTANCIA_DE_CONTACTO IS NOT NULL
                 GROUP BY CIRCUNSTANCIA_DE_CONTACTO
                 ORDER BY total DESC
@@ -220,7 +220,7 @@ class HealthDataService:
                         TO_CHAR(FECHA_DE_INGRESO, 'MM') as mes,
                         TO_CHAR(FECHA_DE_INGRESO, 'YYYY') as anio,
                         COUNT(*) as total
-                    FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                    FROM SALUD_MENTAL_FEATURED
                     WHERE EXTRACT(YEAR FROM FECHA_DE_INGRESO) = :year
                     GROUP BY TO_CHAR(FECHA_DE_INGRESO, 'MM'), TO_CHAR(FECHA_DE_INGRESO, 'YYYY')
                     ORDER BY mes
@@ -232,7 +232,7 @@ class HealthDataService:
                         TO_CHAR(FECHA_DE_INGRESO, 'MM') as mes,
                         TO_CHAR(FECHA_DE_INGRESO, 'YYYY') as anio,
                         COUNT(*) as total
-                    FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                    FROM SALUD_MENTAL_FEATURED
                     WHERE FECHA_DE_INGRESO >= ADD_MONTHS(SYSDATE, -12)
                     GROUP BY TO_CHAR(FECHA_DE_INGRESO, 'MM'), TO_CHAR(FECHA_DE_INGRESO, 'YYYY')
                     ORDER BY anio, mes
@@ -283,7 +283,7 @@ class HealthDataService:
                         ELSE 'Unknown'
                     END as rango_dias,
                     COUNT(*) as total
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 WHERE "Estancia Días" IS NOT NULL
                 GROUP BY 
                     CASE 
@@ -336,7 +336,7 @@ class HealthDataService:
             cursor = connection.cursor()
             query = """
                 SELECT NOMBRE, EDAD, SEXO, "Comunidad Autónoma", FECHA_DE_NACIMIENTO
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 ORDER BY NOMBRE
                 OFFSET :skip ROWS
                 FETCH NEXT :limit ROWS ONLY
@@ -376,7 +376,7 @@ class HealthDataService:
             cursor = connection.cursor()
             query = """
                 SELECT "Diagnóstico Principal", "Categoría", COUNT(*) as casos
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 WHERE "Diagnóstico Principal" IS NOT NULL
                 GROUP BY "Diagnóstico Principal", "Categoría"
                 ORDER BY casos DESC
@@ -418,7 +418,7 @@ class HealthDataService:
                 SELECT NOMBRE, FECHA_DE_INGRESO, FECHA_DE_FIN_CONTACTO, 
                        "Estancia Días", "Diagnóstico Principal", "Categoría", 
                        TIPO_ALTA, SERVICIO
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 WHERE FECHA_DE_INGRESO IS NOT NULL
                 ORDER BY FECHA_DE_INGRESO DESC
                 OFFSET :skip ROWS
@@ -463,7 +463,7 @@ class HealthDataService:
                     "Comunidad Autónoma",
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 WHERE "Comunidad Autónoma" IS NOT NULL
                 GROUP BY "Comunidad Autónoma"
                 ORDER BY total DESC
@@ -502,7 +502,7 @@ class HealthDataService:
                     SERVICIO,
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
-                FROM ENFERMEDADESMENTALESDIAGNOSTICO
+                FROM SALUD_MENTAL_FEATURED
                 WHERE SERVICIO IS NOT NULL
                 GROUP BY SERVICIO
                 ORDER BY total DESC
@@ -537,7 +537,7 @@ class HealthDataService:
         """
         try:
             cursor = connection.cursor()
-            query = "SELECT COUNT(*) FROM ENFERMEDADESMENTALESDIAGNOSTICO"
+            query = "SELECT COUNT(*) FROM SALUD_MENTAL_FEATURED"
             cursor.execute(query)
             result = cursor.fetchone()
             cursor.close()

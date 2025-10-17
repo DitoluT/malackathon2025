@@ -4,13 +4,13 @@ from datetime import date, datetime
 
 
 # ============================================================================
-# MODELO PRINCIPAL: ENFERMEDADESMENTALESDIAGNOSTICO
+# MODELO PRINCIPAL: SALUD_MENTAL_FEATURED
 # ============================================================================
 
 class RegistroMentalBase(BaseModel):
     """
-    Modelo base para registros de enfermedades mentales y diagnóstico.
-    Basado en la tabla ENFERMEDADESMENTALESDIAGNOSTICO.
+    Base model for a health record entry.
+    Basado en la tabla SALUD_MENTAL_FEATURED.
     """
     # Información del paciente
     comunidad_autonoma: Optional[str] = Field(None, alias="Comunidad Autónoma")

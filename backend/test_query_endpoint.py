@@ -30,7 +30,7 @@ def test_simple_query():
     print("=" * 80)
     
     query = {
-        "query": "SELECT COUNT(*) as total FROM ENFERMEDADESMENTALESDIAGNOSTICO",
+        "query": "SELECT COUNT(*) as total FROM SALUD_MENTAL_FEATURED",
         "limit": 10
     }
     
@@ -68,7 +68,7 @@ def test_grouped_query():
     
     query = {
         "query": '''SELECT "Categoría" as category, COUNT(*) as value
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
+FROM SALUD_MENTAL_FEATURED
 GROUP BY "Categoría"
 ORDER BY value DESC''',
         "limit": 10
@@ -114,7 +114,7 @@ def test_query_with_filter():
     
     query = {
         "query": '''SELECT "Categoría" as category, COUNT(*) as value
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
+FROM SALUD_MENTAL_FEATURED
 WHERE "Categoría" LIKE :searchText
 GROUP BY "Categoría"
 ORDER BY value DESC''',

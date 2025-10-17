@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script para verificar la estructura de la tabla ENFERMEDADESMENTALESDIAGNOSTICO
+Script para verificar la estructura de la tabla SALUD_MENTAL_FEATURED
 en Oracle Database.
 """
 

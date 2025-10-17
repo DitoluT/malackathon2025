@@ -233,7 +233,7 @@ export function buildQuery(
   if (aggregation === 'COUNT') {
     query = `
       SELECT ${xColumn} as category, COUNT(*) as value
-      FROM ENFERMEDADESMENTALESDIAGNOSTICO
+      FROM SALUD_MENTAL_FEATURED
       ${whereClause}
       GROUP BY ${xColumn}
       ORDER BY value DESC
@@ -241,7 +241,7 @@ export function buildQuery(
   } else {
     query = `
       SELECT ${xColumn} as category, ${aggregation}(${yColumn}) as value
-      FROM ENFERMEDADESMENTALESDIAGNOSTICO
+      FROM SALUD_MENTAL_FEATURED
       ${whereClause}
       GROUP BY ${xColumn}
       ORDER BY value DESC
@@ -325,7 +325,7 @@ export async function executeQueryWithTextFilters(
   if (aggregation === 'COUNT' || yAxis === 'count') {
     query = `
       SELECT ${xColumn} as category, COUNT(*) as value
-      FROM ENFERMEDADESMENTALESDIAGNOSTICO
+      FROM SALUD_MENTAL_FEATURED
       ${whereClause}
       GROUP BY ${xColumn}
       ORDER BY value DESC
@@ -333,7 +333,7 @@ export async function executeQueryWithTextFilters(
   } else {
     query = `
       SELECT ${xColumn} as category, ${aggregation}(${yColumn}) as value
-      FROM ENFERMEDADESMENTALESDIAGNOSTICO
+      FROM SALUD_MENTAL_FEATURED
       ${whereClause}
       GROUP BY ${xColumn}
       ORDER BY value DESC

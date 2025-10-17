@@ -56,8 +56,10 @@ app = FastAPI(
     
     The API provides access to the main table:
     
-    * **ENFERMEDADESMENTALESDIAGNOSTICO**: Complete mental health diagnosis data (111 columns)
-      - Patient information (name, age, sex, birth date)
+        **Available Tables:**
+    
+    * **SALUD_MENTAL_FEATURED**: Complete mental health diagnosis data (112 columns)
+      - Patient demographics (age, gender, location)
       - Location data (autonomous community, country)
       - Admission details (dates, duration, service)
       - Diagnoses (principal + 19 additional diagnoses)

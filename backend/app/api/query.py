@@ -70,7 +70,7 @@ class QueryExample(BaseModel):
     response_model=SQLQueryResponse,
     summary="Execute custom SQL query",
     description="""
-    Execute a custom SELECT query on the ENFERMEDADESMENTALESDIAGNOSTICO table.
+    Execute a custom SELECT query on the SALUD_MENTAL_FEATURED table.
     
     **Security:**
     - Only SELECT queries are allowed
@@ -91,7 +91,7 @@ class QueryExample(BaseModel):
 )
 async def execute_custom_query(
     request: SQLQueryRequest = Body(..., example={
-        "query": 'SELECT "Categoría", COUNT(*) as total FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE EDAD > :edad GROUP BY "Categoría" ORDER BY total DESC',
+        "query": 'SELECT "Categoría", COUNT(*) as total FROM SALUD_MENTAL_FEATURED WHERE EDAD > :edad GROUP BY "Categoría" ORDER BY total DESC',
         "params": {"edad": 50},
         "limit": 100
     }),
@@ -105,14 +105,14 @@ async def execute_custom_query(
     1. Count by category:
        ```sql
        SELECT "Categoría", COUNT(*) as total 
-       FROM ENFERMEDADESMENTALESDIAGNOSTICO 
+       FROM SALUD_MENTAL_FEATURED 
        GROUP BY "Categoría"
        ```
     
     2. Patients by age range with parameters:
        ```sql
        SELECT NOMBRE, EDAD, SEXO 
-       FROM ENFERMEDADESMENTALESDIAGNOSTICO 
+       FROM SALUD_MENTAL_FEATURED 
        WHERE EDAD BETWEEN :min_edad AND :max_edad
        ```
        params: {"min_edad": 30, "max_edad": 40}
@@ -120,7 +120,7 @@ async def execute_custom_query(
     3. Average stay by service:
        ```sql
        SELECT SERVICIO, AVG("Estancia Días") as promedio_estancia 
-       FROM ENFERMEDADESMENTALESDIAGNOSTICO 
+       FROM SALUD_MENTAL_FEATURED 
        WHERE "Estancia Días" IS NOT NULL 
        GROUP BY SERVICIO
        ```
@@ -256,28 +256,28 @@ async def execute_custom_query(
 )
 async def get_query_examples():
     """
-    Get a list of useful example queries for the ENFERMEDADESMENTALESDIAGNOSTICO table.
+    Get a list of useful example queries for the SALUD_MENTAL_FEATURED table.
     """
     examples = [
         {
             "name": "Distribución por Categoría",
             "description": "Cuenta cuántos casos hay por cada categoría de diagnóstico",
-            "query": 'SELECT "Categoría", COUNT(*) as total FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE "Categoría" IS NOT NULL GROUP BY "Categoría" ORDER BY total DESC'
+            "query": 'SELECT "Categoría", COUNT(*) as total FROM SALUD_MENTAL_FEATURED WHERE "Categoría" IS NOT NULL GROUP BY "Categoría" ORDER BY total DESC'
         },
         {
             "name": "Pacientes por Edad",
             "description": "Lista pacientes mayores de cierta edad (usar parámetro :edad)",
-            "query": 'SELECT NOMBRE, EDAD, SEXO, "Comunidad Autónoma" FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE EDAD > :edad ORDER BY EDAD DESC'
+            "query": 'SELECT NOMBRE, EDAD, SEXO, "Comunidad Autónoma" FROM SALUD_MENTAL_FEATURED WHERE EDAD > :edad ORDER BY EDAD DESC'
         },
         {
             "name": "Promedio de Estancia por Servicio",
             "description": "Calcula el promedio de días de estancia por servicio hospitalario",
-            "query": 'SELECT SERVICIO, ROUND(AVG("Estancia Días"), 2) as promedio_dias, COUNT(*) as casos FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE SERVICIO IS NOT NULL AND "Estancia Días" IS NOT NULL GROUP BY SERVICIO ORDER BY promedio_dias DESC'
+            "query": 'SELECT SERVICIO, ROUND(AVG("Estancia Días"), 2) as promedio_dias, COUNT(*) as casos FROM SALUD_MENTAL_FEATURED WHERE SERVICIO IS NOT NULL AND "Estancia Días" IS NOT NULL GROUP BY SERVICIO ORDER BY promedio_dias DESC'
         },
         {
             "name": "Ingresos por Comunidad Autónoma",
             "description": "Cuenta ingresos agrupados por comunidad autónoma",
-            "query": 'SELECT "Comunidad Autónoma", COUNT(*) as total_ingresos FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE "Comunidad Autónoma" IS NOT NULL GROUP BY "Comunidad Autónoma" ORDER BY total_ingresos DESC'
+            "query": 'SELECT "Comunidad Autónoma", COUNT(*) as total_ingresos FROM SALUD_MENTAL_FEATURED WHERE "Comunidad Autónoma" IS NOT NULL GROUP BY "Comunidad Autónoma" ORDER BY total_ingresos DESC'
         },
         {
             "name": "Distribución por Sexo y Rango de Edad",
@@ -292,7 +292,7 @@ async def get_query_examples():
         ELSE 'Desconocido'
     END as rango_edad,
     COUNT(*) as total
-FROM ENFERMEDADESMENTALESDIAGNOSTICO
+FROM SALUD_MENTAL_FEATURED
 WHERE EDAD IS NOT NULL AND SEXO IS NOT NULL
 GROUP BY SEXO, CASE 
     WHEN EDAD BETWEEN 0 AND 17 THEN '0-17'
@@ -306,27 +306,27 @@ ORDER BY sexo, rango_edad"""
         {
             "name": "Top 10 Diagnósticos Principales",
             "description": "Los 10 diagnósticos principales más frecuentes",
-            "query": 'SELECT "Diagnóstico Principal", "Categoría", COUNT(*) as casos FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE "Diagnóstico Principal" IS NOT NULL GROUP BY "Diagnóstico Principal", "Categoría" ORDER BY casos DESC FETCH FIRST 10 ROWS ONLY'
+            "query": 'SELECT "Diagnóstico Principal", "Categoría", COUNT(*) as casos FROM SALUD_MENTAL_FEATURED WHERE "Diagnóstico Principal" IS NOT NULL GROUP BY "Diagnóstico Principal", "Categoría" ORDER BY casos DESC FETCH FIRST 10 ROWS ONLY'
         },
         {
             "name": "Análisis de Reingresos",
             "description": "Estadísticas sobre reingresos hospitalarios",
-            "query": 'SELECT REINGRESO, COUNT(*) as total, ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE REINGRESO IS NOT NULL GROUP BY REINGRESO ORDER BY total DESC'
+            "query": 'SELECT REINGRESO, COUNT(*) as total, ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje FROM SALUD_MENTAL_FEATURED WHERE REINGRESO IS NOT NULL GROUP BY REINGRESO ORDER BY total DESC'
         },
         {
             "name": "Costes por Categoría",
             "description": "Coste promedio por categoría de diagnóstico",
-            "query": 'SELECT "Categoría", COUNT(*) as casos, ROUND(AVG(COSTE_APR), 2) as coste_promedio, ROUND(MIN(COSTE_APR), 2) as coste_min, ROUND(MAX(COSTE_APR), 2) as coste_max FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE "Categoría" IS NOT NULL AND COSTE_APR IS NOT NULL GROUP BY "Categoría" ORDER BY coste_promedio DESC'
+            "query": 'SELECT "Categoría", COUNT(*) as casos, ROUND(AVG(COSTE_APR), 2) as coste_promedio, ROUND(MIN(COSTE_APR), 2) as coste_min, ROUND(MAX(COSTE_APR), 2) as coste_max FROM SALUD_MENTAL_FEATURED WHERE "Categoría" IS NOT NULL AND COSTE_APR IS NOT NULL GROUP BY "Categoría" ORDER BY coste_promedio DESC'
         },
         {
             "name": "Ingresos por Mes y Año",
             "description": "Tendencia de ingresos agrupados por mes y año",
-            "query": 'SELECT TO_CHAR(FECHA_DE_INGRESO, \'YYYY-MM\') as mes_anio, COUNT(*) as total_ingresos FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE FECHA_DE_INGRESO IS NOT NULL GROUP BY TO_CHAR(FECHA_DE_INGRESO, \'YYYY-MM\') ORDER BY mes_anio DESC'
+            "query": 'SELECT TO_CHAR(FECHA_DE_INGRESO, \'YYYY-MM\') as mes_anio, COUNT(*) as total_ingresos FROM SALUD_MENTAL_FEATURED WHERE FECHA_DE_INGRESO IS NOT NULL GROUP BY TO_CHAR(FECHA_DE_INGRESO, \'YYYY-MM\') ORDER BY mes_anio DESC'
         },
         {
             "name": "Pacientes con Estancia Prolongada",
             "description": "Pacientes con estancia mayor a un número de días (usar parámetro :dias)",
-            "query": 'SELECT NOMBRE, EDAD, SEXO, "Estancia Días", "Diagnóstico Principal", SERVICIO FROM ENFERMEDADESMENTALESDIAGNOSTICO WHERE "Estancia Días" > :dias ORDER BY "Estancia Días" DESC'
+            "query": 'SELECT NOMBRE, EDAD, SEXO, "Estancia Días", "Diagnóstico Principal", SERVICIO FROM SALUD_MENTAL_FEATURED WHERE "Estancia Días" > :dias ORDER BY "Estancia Días" DESC'
         }
     ]
     
@@ -336,11 +336,11 @@ ORDER BY sexo, rango_edad"""
 @router.get(
     "/schema",
     summary="Get table schema information",
-    description="Get information about available columns in ENFERMEDADESMENTALESDIAGNOSTICO table."
+    description="Get information about available columns in SALUD_MENTAL_FEATURED table."
 )
 async def get_table_schema(connection=Depends(get_db_connection)):
     """
-    Get schema information about the ENFERMEDADESMENTALESDIAGNOSTICO table.
+    Get schema information about the SALUD_MENTAL_FEATURED table.
     Returns column names, data types, and nullable status.
     """
     try:
@@ -354,7 +354,7 @@ async def get_table_schema(connection=Depends(get_db_connection)):
             DATA_LENGTH,
             NULLABLE
         FROM USER_TAB_COLUMNS
-        WHERE TABLE_NAME = 'ENFERMEDADESMENTALESDIAGNOSTICO'
+        WHERE TABLE_NAME = 'SALUD_MENTAL_FEATURED'
         ORDER BY COLUMN_ID
         """
         
@@ -372,7 +372,7 @@ async def get_table_schema(connection=Depends(get_db_connection)):
         cursor.close()
         
         return {
-            "table_name": "ENFERMEDADESMENTALESDIAGNOSTICO",
+            "table_name": "SALUD_MENTAL_FEATURED",
             "total_columns": len(columns_info),
             "columns": columns_info
         }

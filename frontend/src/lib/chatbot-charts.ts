@@ -159,7 +159,7 @@ export const generateResponseWithGemini = async (
 
 Genera una query SQL SELECT apropiada. Recuerda:
 - Usar alias CATEGORY y VALUE para los resultados
-- La tabla es ENFERMEDADESMENTALESDIAGNOSTICO
+- La tabla es SALUD_MENTAL_FEATURED
 - Columnas con espacios entre comillas: "Comunidad Autónoma", "Diagnóstico Principal", etc.
 
 Responde SOLO con JSON:

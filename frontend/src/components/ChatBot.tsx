@@ -102,7 +102,7 @@ const ChatBot: React.FC = () => {
                     });
                     
                     // Agregar un resumen para fácil acceso
-                    dataText += `\n📋 RESUMEN: Estos son los datos reales de la base de datos ENFERMEDADESMENTALESDIAGNOSTICO. El usuario puede preguntarme sobre estos números específicos y debo responder basándome en ESTOS datos, no en datos simulados.`;
+                    dataText += `\n📋 RESUMEN: Estos son los datos reales de la base de datos SALUD_MENTAL_FEATURED. El usuario puede preguntarme sobre estos números específicos y debo responder basándome en ESTOS datos, no en datos simulados.`;
                   }
                   
                   return dataText;
