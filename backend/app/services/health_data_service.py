@@ -27,12 +27,12 @@ class HealthDataService:
             cursor = connection.cursor()
             query = """
                 SELECT 
-                    "Categoría",
+                    CATEGORIA,
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
                 FROM SALUD_MENTAL_FEATURED
-                WHERE "Categoría" IS NOT NULL
-                GROUP BY "Categoría"
+                WHERE CATEGORIA IS NOT NULL
+                GROUP BY CATEGORIA
                 ORDER BY total DESC
             """
             cursor.execute(query)
@@ -217,24 +217,24 @@ class HealthDataService:
             if year:
                 query = """
                     SELECT 
-                        TO_CHAR(FECHA_DE_INGRESO, 'MM') as mes,
-                        TO_CHAR(FECHA_DE_INGRESO, 'YYYY') as anio,
+                        TO_CHAR(FECHA_INGRESO, 'MM') as mes,
+                        TO_CHAR(FECHA_INGRESO, 'YYYY') as anio,
                         COUNT(*) as total
                     FROM SALUD_MENTAL_FEATURED
-                    WHERE EXTRACT(YEAR FROM FECHA_DE_INGRESO) = :year
-                    GROUP BY TO_CHAR(FECHA_DE_INGRESO, 'MM'), TO_CHAR(FECHA_DE_INGRESO, 'YYYY')
+                    WHERE EXTRACT(YEAR FROM FECHA_INGRESO) = :year
+                    GROUP BY TO_CHAR(FECHA_INGRESO, 'MM'), TO_CHAR(FECHA_INGRESO, 'YYYY')
                     ORDER BY mes
                 """
                 cursor.execute(query, year=year)
             else:
                 query = """
                     SELECT 
-                        TO_CHAR(FECHA_DE_INGRESO, 'MM') as mes,
-                        TO_CHAR(FECHA_DE_INGRESO, 'YYYY') as anio,
+                        TO_CHAR(FECHA_INGRESO, 'MM') as mes,
+                        TO_CHAR(FECHA_INGRESO, 'YYYY') as anio,
                         COUNT(*) as total
                     FROM SALUD_MENTAL_FEATURED
-                    WHERE FECHA_DE_INGRESO >= ADD_MONTHS(SYSDATE, -12)
-                    GROUP BY TO_CHAR(FECHA_DE_INGRESO, 'MM'), TO_CHAR(FECHA_DE_INGRESO, 'YYYY')
+                    WHERE FECHA_INGRESO >= ADD_MONTHS(SYSDATE, -12)
+                    GROUP BY TO_CHAR(FECHA_INGRESO, 'MM'), TO_CHAR(FECHA_INGRESO, 'YYYY')
                     ORDER BY anio, mes
                 """
                 cursor.execute(query)
@@ -275,23 +275,23 @@ class HealthDataService:
             query = """
                 SELECT 
                     CASE 
-                        WHEN "Estancia Días" BETWEEN 1 AND 3 THEN '1-3 dias'
-                        WHEN "Estancia Días" BETWEEN 4 AND 7 THEN '4-7 dias'
-                        WHEN "Estancia Días" BETWEEN 8 AND 14 THEN '8-14 dias'
-                        WHEN "Estancia Días" BETWEEN 15 AND 30 THEN '15-30 dias'
-                        WHEN "Estancia Días" > 30 THEN '30+ dias'
+                        WHEN ESTANCIA_DIAS BETWEEN 1 AND 3 THEN '1-3 dias'
+                        WHEN ESTANCIA_DIAS BETWEEN 4 AND 7 THEN '4-7 dias'
+                        WHEN ESTANCIA_DIAS BETWEEN 8 AND 14 THEN '8-14 dias'
+                        WHEN ESTANCIA_DIAS BETWEEN 15 AND 30 THEN '15-30 dias'
+                        WHEN ESTANCIA_DIAS > 30 THEN '30+ dias'
                         ELSE 'Unknown'
                     END as rango_dias,
                     COUNT(*) as total
                 FROM SALUD_MENTAL_FEATURED
-                WHERE "Estancia Días" IS NOT NULL
+                WHERE ESTANCIA_DIAS IS NOT NULL
                 GROUP BY 
                     CASE 
-                        WHEN "Estancia Días" BETWEEN 1 AND 3 THEN '1-3 dias'
-                        WHEN "Estancia Días" BETWEEN 4 AND 7 THEN '4-7 dias'
-                        WHEN "Estancia Días" BETWEEN 8 AND 14 THEN '8-14 dias'
-                        WHEN "Estancia Días" BETWEEN 15 AND 30 THEN '15-30 dias'
-                        WHEN "Estancia Días" > 30 THEN '30+ dias'
+                        WHEN ESTANCIA_DIAS BETWEEN 1 AND 3 THEN '1-3 dias'
+                        WHEN ESTANCIA_DIAS BETWEEN 4 AND 7 THEN '4-7 dias'
+                        WHEN ESTANCIA_DIAS BETWEEN 8 AND 14 THEN '8-14 dias'
+                        WHEN ESTANCIA_DIAS BETWEEN 15 AND 30 THEN '15-30 dias'
+                        WHEN ESTANCIA_DIAS > 30 THEN '30+ dias'
                         ELSE 'Unknown'
                     END
                 ORDER BY 
@@ -335,9 +335,9 @@ class HealthDataService:
         try:
             cursor = connection.cursor()
             query = """
-                SELECT NOMBRE, EDAD, SEXO, "Comunidad Autónoma", FECHA_DE_NACIMIENTO
+                SELECT NOMBRE_COMPLETO, EDAD, SEXO, COMUNIDAD_AUTONOMA, FECHA_NACIMIENTO
                 FROM SALUD_MENTAL_FEATURED
-                ORDER BY NOMBRE
+                ORDER BY NOMBRE_COMPLETO
                 OFFSET :skip ROWS
                 FETCH NEXT :limit ROWS ONLY
             """
@@ -375,10 +375,10 @@ class HealthDataService:
         try:
             cursor = connection.cursor()
             query = """
-                SELECT "Diagnóstico Principal", "Categoría", COUNT(*) as casos
+                SELECT DIAGNOSTICO_PRINCIPAL, CATEGORIA, COUNT(*) as casos
                 FROM SALUD_MENTAL_FEATURED
-                WHERE "Diagnóstico Principal" IS NOT NULL
-                GROUP BY "Diagnóstico Principal", "Categoría"
+                WHERE DIAGNOSTICO_PRINCIPAL IS NOT NULL
+                GROUP BY DIAGNOSTICO_PRINCIPAL, CATEGORIA
                 ORDER BY casos DESC
                 OFFSET :skip ROWS
                 FETCH NEXT :limit ROWS ONLY
@@ -415,12 +415,12 @@ class HealthDataService:
         try:
             cursor = connection.cursor()
             query = """
-                SELECT NOMBRE, FECHA_DE_INGRESO, FECHA_DE_FIN_CONTACTO, 
-                       "Estancia Días", "Diagnóstico Principal", "Categoría", 
+                SELECT NOMBRE_COMPLETO, FECHA_INGRESO, FECHA_FIN_CONTACTO, 
+                       ESTANCIA_DIAS, DIAGNOSTICO_PRINCIPAL, CATEGORIA, 
                        TIPO_ALTA, SERVICIO
                 FROM SALUD_MENTAL_FEATURED
-                WHERE FECHA_DE_INGRESO IS NOT NULL
-                ORDER BY FECHA_DE_INGRESO DESC
+                WHERE FECHA_INGRESO IS NOT NULL
+                ORDER BY FECHA_INGRESO DESC
                 OFFSET :skip ROWS
                 FETCH NEXT :limit ROWS ONLY
             """
@@ -460,12 +460,12 @@ class HealthDataService:
             cursor = connection.cursor()
             query = """
                 SELECT 
-                    "Comunidad Autónoma",
+                    COMUNIDAD_AUTONOMA,
                     COUNT(*) as total,
                     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as porcentaje
                 FROM SALUD_MENTAL_FEATURED
-                WHERE "Comunidad Autónoma" IS NOT NULL
-                GROUP BY "Comunidad Autónoma"
+                WHERE COMUNIDAD_AUTONOMA IS NOT NULL
+                GROUP BY COMUNIDAD_AUTONOMA
                 ORDER BY total DESC
             """
             cursor.execute(query)

@@ -160,7 +160,8 @@ export const generateResponseWithGemini = async (
 Genera una query SQL SELECT apropiada. Recuerda:
 - Usar alias CATEGORY y VALUE para los resultados
 - La tabla es SALUD_MENTAL_FEATURED
-- Columnas con espacios entre comillas: "Comunidad Autónoma", "Diagnóstico Principal", etc.
+- Las columnas NO tienen espacios: COMUNIDAD_AUTONOMA, ESTANCIA_DIAS, CATEGORIA, DIAGNOSTICO_PRINCIPAL, FECHA_INGRESO, NOMBRE_COMPLETO, DIAS_UCI, etc.
+- Nunca uses comillas en los nombres de columnas
 
 Responde SOLO con JSON:
 {

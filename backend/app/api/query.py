@@ -91,7 +91,7 @@ class QueryExample(BaseModel):
 )
 async def execute_custom_query(
     request: SQLQueryRequest = Body(..., example={
-        "query": 'SELECT "Categoría", COUNT(*) as total FROM SALUD_MENTAL_FEATURED WHERE EDAD > :edad GROUP BY "Categoría" ORDER BY total DESC',
+        "query": 'SELECT CATEGORIA, COUNT(*) as total FROM SALUD_MENTAL_FEATURED WHERE EDAD > :edad GROUP BY CATEGORIA ORDER BY total DESC',
         "params": {"edad": 50},
         "limit": 100
     }),
@@ -104,14 +104,14 @@ async def execute_custom_query(
     
     1. Count by category:
        ```sql
-       SELECT "Categoría", COUNT(*) as total 
+       SELECT CATEGORIA, COUNT(*) as total 
        FROM SALUD_MENTAL_FEATURED 
-       GROUP BY "Categoría"
+       GROUP BY CATEGORIA
        ```
     
     2. Patients by age range with parameters:
        ```sql
-       SELECT NOMBRE, EDAD, SEXO 
+       SELECT NOMBRE_COMPLETO, EDAD, SEXO 
        FROM SALUD_MENTAL_FEATURED 
        WHERE EDAD BETWEEN :min_edad AND :max_edad
        ```
@@ -119,9 +119,9 @@ async def execute_custom_query(
     
     3. Average stay by service:
        ```sql
-       SELECT SERVICIO, AVG("Estancia Días") as promedio_estancia 
+       SELECT SERVICIO, AVG(ESTANCIA_DIAS) as promedio_estancia 
        FROM SALUD_MENTAL_FEATURED 
-       WHERE "Estancia Días" IS NOT NULL 
+       WHERE ESTANCIA_DIAS IS NOT NULL 
        GROUP BY SERVICIO
        ```
     """
@@ -262,22 +262,22 @@ async def get_query_examples():
         {
             "name": "Distribución por Categoría",
             "description": "Cuenta cuántos casos hay por cada categoría de diagnóstico",
-            "query": 'SELECT "Categoría", COUNT(*) as total FROM SALUD_MENTAL_FEATURED WHERE "Categoría" IS NOT NULL GROUP BY "Categoría" ORDER BY total DESC'
+            "query": 'SELECT CATEGORIA, COUNT(*) as total FROM SALUD_MENTAL_FEATURED WHERE CATEGORIA IS NOT NULL GROUP BY CATEGORIA ORDER BY total DESC'
         },
         {
             "name": "Pacientes por Edad",
             "description": "Lista pacientes mayores de cierta edad (usar parámetro :edad)",
-            "query": 'SELECT NOMBRE, EDAD, SEXO, "Comunidad Autónoma" FROM SALUD_MENTAL_FEATURED WHERE EDAD > :edad ORDER BY EDAD DESC'
+            "query": 'SELECT NOMBRE_COMPLETO, EDAD, SEXO, COMUNIDAD_AUTONOMA FROM SALUD_MENTAL_FEATURED WHERE EDAD > :edad ORDER BY EDAD DESC'
         },
         {
             "name": "Promedio de Estancia por Servicio",
             "description": "Calcula el promedio de días de estancia por servicio hospitalario",
-            "query": 'SELECT SERVICIO, ROUND(AVG("Estancia Días"), 2) as promedio_dias, COUNT(*) as casos FROM SALUD_MENTAL_FEATURED WHERE SERVICIO IS NOT NULL AND "Estancia Días" IS NOT NULL GROUP BY SERVICIO ORDER BY promedio_dias DESC'
+            "query": 'SELECT SERVICIO, ROUND(AVG(ESTANCIA_DIAS), 2) as promedio_dias, COUNT(*) as casos FROM SALUD_MENTAL_FEATURED WHERE SERVICIO IS NOT NULL AND ESTANCIA_DIAS IS NOT NULL GROUP BY SERVICIO ORDER BY promedio_dias DESC'
         },
         {
             "name": "Ingresos por Comunidad Autónoma",
             "description": "Cuenta ingresos agrupados por comunidad autónoma",
-            "query": 'SELECT "Comunidad Autónoma", COUNT(*) as total_ingresos FROM SALUD_MENTAL_FEATURED WHERE "Comunidad Autónoma" IS NOT NULL GROUP BY "Comunidad Autónoma" ORDER BY total_ingresos DESC'
+            "query": 'SELECT COMUNIDAD_AUTONOMA, COUNT(*) as total_ingresos FROM SALUD_MENTAL_FEATURED WHERE COMUNIDAD_AUTONOMA IS NOT NULL GROUP BY COMUNIDAD_AUTONOMA ORDER BY total_ingresos DESC'
         },
         {
             "name": "Distribución por Sexo y Rango de Edad",
@@ -306,7 +306,7 @@ ORDER BY sexo, rango_edad"""
         {
             "name": "Top 10 Diagnósticos Principales",
             "description": "Los 10 diagnósticos principales más frecuentes",
-            "query": 'SELECT "Diagnóstico Principal", "Categoría", COUNT(*) as casos FROM SALUD_MENTAL_FEATURED WHERE "Diagnóstico Principal" IS NOT NULL GROUP BY "Diagnóstico Principal", "Categoría" ORDER BY casos DESC FETCH FIRST 10 ROWS ONLY'
+            "query": 'SELECT DIAGNOSTICO_PRINCIPAL, CATEGORIA, COUNT(*) as casos FROM SALUD_MENTAL_FEATURED WHERE DIAGNOSTICO_PRINCIPAL IS NOT NULL GROUP BY DIAGNOSTICO_PRINCIPAL, CATEGORIA ORDER BY casos DESC FETCH FIRST 10 ROWS ONLY'
         },
         {
             "name": "Análisis de Reingresos",
@@ -316,17 +316,17 @@ ORDER BY sexo, rango_edad"""
         {
             "name": "Costes por Categoría",
             "description": "Coste promedio por categoría de diagnóstico",
-            "query": 'SELECT "Categoría", COUNT(*) as casos, ROUND(AVG(COSTE_APR), 2) as coste_promedio, ROUND(MIN(COSTE_APR), 2) as coste_min, ROUND(MAX(COSTE_APR), 2) as coste_max FROM SALUD_MENTAL_FEATURED WHERE "Categoría" IS NOT NULL AND COSTE_APR IS NOT NULL GROUP BY "Categoría" ORDER BY coste_promedio DESC'
+            "query": 'SELECT CATEGORIA, COUNT(*) as casos, ROUND(AVG(COSTE_APR), 2) as coste_promedio, ROUND(MIN(COSTE_APR), 2) as coste_min, ROUND(MAX(COSTE_APR), 2) as coste_max FROM SALUD_MENTAL_FEATURED WHERE CATEGORIA IS NOT NULL AND COSTE_APR IS NOT NULL GROUP BY CATEGORIA ORDER BY coste_promedio DESC'
         },
         {
             "name": "Ingresos por Mes y Año",
             "description": "Tendencia de ingresos agrupados por mes y año",
-            "query": 'SELECT TO_CHAR(FECHA_DE_INGRESO, \'YYYY-MM\') as mes_anio, COUNT(*) as total_ingresos FROM SALUD_MENTAL_FEATURED WHERE FECHA_DE_INGRESO IS NOT NULL GROUP BY TO_CHAR(FECHA_DE_INGRESO, \'YYYY-MM\') ORDER BY mes_anio DESC'
+            "query": 'SELECT TO_CHAR(FECHA_INGRESO, \'YYYY-MM\') as mes_anio, COUNT(*) as total_ingresos FROM SALUD_MENTAL_FEATURED WHERE FECHA_INGRESO IS NOT NULL GROUP BY TO_CHAR(FECHA_INGRESO, \'YYYY-MM\') ORDER BY mes_anio DESC'
         },
         {
             "name": "Pacientes con Estancia Prolongada",
             "description": "Pacientes con estancia mayor a un número de días (usar parámetro :dias)",
-            "query": 'SELECT NOMBRE, EDAD, SEXO, "Estancia Días", "Diagnóstico Principal", SERVICIO FROM SALUD_MENTAL_FEATURED WHERE "Estancia Días" > :dias ORDER BY "Estancia Días" DESC'
+            "query": 'SELECT NOMBRE_COMPLETO, EDAD, SEXO, ESTANCIA_DIAS, DIAGNOSTICO_PRINCIPAL, SERVICIO FROM SALUD_MENTAL_FEATURED WHERE ESTANCIA_DIAS > :dias ORDER BY ESTANCIA_DIAS DESC'
         }
     ]
     

@@ -201,13 +201,15 @@ ORDER BY MES_INGRESO
 
 1. **Solo SELECT** (no INSERT, UPDATE, DELETE, DROP)
 2. **Siempre usar alias** "CATEGORY" y "VALUE" para columnas de resultado
-3. **Nombres de columnas sin espacios** (CATEGORIA, ESTANCIA_DIAS, COMUNIDAD_AUTONOMA)
-4. **Usar WHERE** para filtrar valores NULL
-5. **Usar GROUP BY** para agregaciones
-6. **Limitar resultados** con FETCH FIRST n ROWS ONLY si son muchos (>100)
-7. **Usar CASE** para categorizar valores numéricos (edad, costes, severidad)
-8. **JOIN con DIAGNOSTICOS** cuando necesites descripción de diagnóstico
-9. **MES_INGRESO es NUMBER** (1-12), no texto - no necesita CASE para ordenar
+3. **Nombres de columnas SIN ESPACIOS y SIN COMILLAS** (CATEGORIA, ESTANCIA_DIAS, COMUNIDAD_AUTONOMA, DIAGNOSTICO_PRINCIPAL, FECHA_INGRESO, NOMBRE_COMPLETO, DIAS_UCI)
+4. **NUNCA uses comillas** en nombres de columnas - todos los nombres son identificadores SQL simples
+5. **Usar WHERE** para filtrar valores NULL
+6. **Usar GROUP BY** para agregaciones
+7. **Limitar resultados** con FETCH FIRST n ROWS ONLY si son muchos (>100)
+8. **Usar CASE** para categorizar valores numéricos (edad, costes, severidad)
+9. **JOIN con DIAGNOSTICOS** cuando necesites descripción de diagnóstico
+10. **MES_INGRESO es NUMBER** (1-12), no texto - no necesita CASE para ordenar
+11. **DIAS_UCI es VARCHAR2** - usa TO_NUMBER(DIAS_UCI) si necesitas operaciones numéricas
 
 ---
 
